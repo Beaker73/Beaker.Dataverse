@@ -1,0 +1,31 @@
+{
+  "name": "beaker.dataverse.api",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/beaker.dataverse.api.umd.js",
+  "module": "./dist/beaker.dataverse.api.es.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@types/react-dom": "^18",
+    "react-dom": "^18",
+    "typescript": "~5.8.3",
+    "vite": "^6.3.4",
+    "vitest": "3.1.2"
+  },
+  "peerDependencies": {
+    "@js-joda/core": "^5.6.5",
+    "@js-joda/timezone": "^2.22.0",
+    "react-dom": "^18"
+  },
+  "dependencies": {
+    "uuid": "^11.1.0"
+  }
+}
