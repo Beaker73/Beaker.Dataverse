@@ -45,7 +45,7 @@ export type FieldQuery<
 	;
 
 /** The allowed operators for field queries */
-export const enum Operator
+export enum Operator
 	{
 	Equal = "eq",
 	NotEqual = "ne",
