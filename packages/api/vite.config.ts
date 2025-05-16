@@ -19,7 +19,14 @@ export default defineConfig({
                 "@js-joda/core",
                 "@js-joda/timezone",
                 "@js-joda/timezone/dist/js-joda-timezone-10-year-range",
-            ]
+            ],
+            output: {
+                globals: {
+                    "@js-joda/core": "JSJoda",
+                    "@js-joda/timezone": "JSJoda",
+                    "@js-joda/timezone/dist/js-joda-timezone-10-year-range": "JSJoda",
+                }
+            }
         },
     }
 })
