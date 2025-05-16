@@ -19,7 +19,7 @@ export type ApiOptions = {
 export type ApiForEntities<TOptions extends ApiOptions> = {
     [TKey in keyof TOptions["sets"]]: TypedApi<TOptions["sets"][TKey]>;
 }
-    & Pick<DataverseApi, "whoAmI" | "getOptionSetValues" | "getODataSetName">
+    & DataverseApi
     ;
 
 export function api<TOptions extends ApiOptions>(options: TOptions)
@@ -31,6 +31,16 @@ export function api<TOptions extends ApiOptions>(options: TOptions)
         ...Object.fromEntries(
             Object.entries(options.sets)
                 .map(([key, metadata]) => [key, typedApi(metadata)])),
+        
+        retrieve: baseApi.retrieve,
+        retrieveMultiple: baseApi.retrieveMultiple,
+        create: baseApi.create,
+        update: baseApi.update,
+        remove: baseApi.remove,
+        saveChanges: baseApi.saveChanges,
+        execute: baseApi.execute,
+        fetch: baseApi.fetch,
+        downloadImage: baseApi.downloadImage,
 
         whoAmI: baseApi.whoAmI,
         getOptionSetvalues: baseApi.getOptionSetValues,
