@@ -14,6 +14,10 @@
   "main": "./dist/beaker.dataverse.api.umd.js",
   "module": "./dist/beaker.dataverse.api.es.js",
   "types": "./dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Beaker73/Beaker.Dataverse/tree/master/packages/api"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
