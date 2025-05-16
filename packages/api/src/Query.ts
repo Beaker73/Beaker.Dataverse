@@ -26,8 +26,8 @@ export interface QueryFilter
 export interface QueryFilterOperation
 {
 	fieldName: string,
-	operator: Operator,
+	operator: QOp,
 	value: unknown,
 }
 
-export type Operator = "in" | "eq" | "ne" | "gt" | "ge" | "lt" | "le" | "in" | "contains" | "startswith" | "endswith";
+export type QOp = "in" | "eq" | "ne" | "gt" | "ge" | "lt" | "le" | "in" | "contains" | "startswith" | "endswith";
