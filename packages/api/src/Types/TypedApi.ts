@@ -24,5 +24,5 @@ export type TypedApi<
             /** Limit to the top n number of rows */
             top?: number,
         },
-    ): Promise<TExpectSingle extends true ? TEntity : TRequireData extends true ? TEntity[] : (TEntity | undefined)[]>,
+    ): Promise<TExpectSingle extends true ? TEntity : TEntity[]>,
 };

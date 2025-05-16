@@ -6,7 +6,7 @@
     "access": "public"
   },
   "description": "Beaker Dataverse API for Client apps",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "type": "module",
   "files": [
     "dist"
