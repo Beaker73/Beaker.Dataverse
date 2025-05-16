@@ -37,4 +37,4 @@ function imageConstructor<
 	return coreTag<Base64String>()(metadata);
 }
 
-export const image = fieldType(imageConstructor, "image")
+export const image = fieldType(imageConstructor, "image");

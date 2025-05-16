@@ -1,4 +1,4 @@
-import { type Guid } from "../Helpers";
+import { hasValue, type Guid } from "../Helpers";
 import type { EntityReference } from "../Types/ConnectorTypes";
 
 import type { EntityMetadata } from "./Entity";
@@ -67,6 +67,11 @@ export function reference<
 }
 
 
+type EntityReferenceReturn<
+	TMetadata extends EntityMetadata,
+	TId extends Guid<TMetadata["schemaName"]> | null | undefined = Guid<TMetadata["schemaName"]> | null | undefined,
+> = TId extends null | undefined ? EntityReference<TMetadata["schemaName"]> | null : EntityReference<TMetadata["schemaName"]>;
+
 /**
  * Creats a reference to an entity with the given id
  * @param metadata The metadata of the entity to create a reference to
@@ -75,13 +80,18 @@ export function reference<
  */
 export function entityReference<
 	TMetadata extends EntityMetadata,
+	TId extends Guid<TMetadata["schemaName"]> | null | undefined = Guid<TMetadata["schemaName"]> | null | undefined,
 >(
 	metadata: TMetadata, 
-	id: Guid<TMetadata["schemaName"]>,
+	id?: TId,
 )
+	: EntityReferenceReturn<TMetadata, TId>
 {
+	if(!hasValue(id))
+		return null as EntityReferenceReturn<TMetadata, TId>;
+
 	return {
 		schemaName: metadata.schemaName as TMetadata["schemaName"],
 		id,
-	} satisfies EntityReference<TMetadata["schemaName"]>;
+	} satisfies EntityReference<TMetadata["schemaName"]> as unknown as EntityReferenceReturn<TMetadata, TId>;
 }
