@@ -7,7 +7,6 @@ import { mergeQueries } from "./Queries/Merge";
 import { Query } from "./Queries/Query";
 import { ApiConnector, DataverseAction, EntityData } from "./Types";
 import { WhoAmITypedResponse } from "./Types/WhoAmITypedResponse";
-import { toFetchXmlString } from "./Xml";
 
 /**
  * Sets up access to the environment api using the provided url and token
@@ -220,10 +219,9 @@ export function dataverseApi(connector: ApiConnector)
 		return result as Record<TType, string>;
 	}
 
-	async function fetch<TMetadata extends EntityMetadata>(metadata: TMetadata, fetch: React.JSX.Element)
+	async function fetch<TMetadata extends EntityMetadata>(metadata: TMetadata, fetchXml: string)
 	{
-		const { fetchXmlString } = toFetchXmlString(fetch);
-		return await connector.fetch(metadata.schemaName,fetchXmlString);
+		return await connector.fetch(metadata.schemaName, fetchXml);
 	}
 
 	/// TODO: somehow make the Type automaticly derive from the metadata. Lost 4 hours during first try. Maybe future insight will help.

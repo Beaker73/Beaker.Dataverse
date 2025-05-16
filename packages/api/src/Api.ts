@@ -1,7 +1,7 @@
 import { ApiConnector, DataverseAction } from "./Types/Connector";
 import { TypedApi } from "./Types/TypedApi";
 import { TypeFromMetadata } from "./Metadata/Derive";
-import { Entity, EntityMetadata } from "./Metadata/Entity";
+import { EntityMetadata } from "./Metadata/Entity";
 import { DataverseApi, dataverseApi } from "./DataverseApi";
 import { Guid } from "./Helpers";
 import { EntityMatch } from "./Queries/Match";
@@ -67,6 +67,7 @@ export function api<TOptions extends ApiOptions>(options: TOptions)
                 },
             ) => baseApi.retrieveMultiple<TMetadata, TSchemaName, TEntity, TExpectSingle, TRequireData>(metadata, options),
             execute: (entity: TEntity, action: Omit<DataverseAction, "boundTo">) => baseApi.execute({ ...action, boundTo: entity }),
+            fetch: (fetchXml: string) => baseApi.fetch<TMetadata>(metadata, fetchXml),
         } as const;
     }
 

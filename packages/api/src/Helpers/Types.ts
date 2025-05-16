@@ -26,7 +26,8 @@ export type Merge<A extends readonly [...any]> = A extends [infer L, ...infer R]
 
 // -----------------------------
 
-export const tags = Symbol("tags");
+// TODO: find out how to use the symbol while building the library
+export const tags = "__tags"; // Symbol("tags");  symbol gives issues when building library
 
 /** Tags any type with special compile time values */
 export type Tag<
