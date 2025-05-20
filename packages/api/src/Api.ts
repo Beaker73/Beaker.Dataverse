@@ -43,7 +43,7 @@ export function api<TOptions extends ApiOptions>(options: TOptions)
         downloadImage: baseApi.downloadImage,
 
         whoAmI: baseApi.whoAmI,
-        getOptionSetvalues: baseApi.getOptionSetValues,
+        getOptionSetValues: baseApi.getOptionSetValues,
         getODataSetName: baseApi.getODataSetName,
 
     } as unknown as ApiForEntities<TOptions>;
