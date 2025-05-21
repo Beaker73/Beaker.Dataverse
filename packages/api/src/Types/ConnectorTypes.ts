@@ -7,8 +7,12 @@ export type EntityData = Record<string, CoreServerType>;
 export interface EntityReference<
 	TSchemaName extends string = string,
 > {
+	/** The schema name of the entity being referenced */
 	schemaName: TSchemaName,
+	/** The unique identifier of the entity */
 	id: Guid<TSchemaName>,
+	/** Optional, if metadata was retrieved with names, this might be filled */
+	name?: string,
 }
 
 export type CoreServerType = string | Guid | number | boolean | null | EntityReference;
