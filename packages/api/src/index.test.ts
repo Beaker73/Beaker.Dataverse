@@ -24,15 +24,13 @@ type AccountMetadata = typeof accountMetadata;
 type Account = TypeFromMetadata<AccountMetadata>;
 type AccountId = Account["id"];
 
-type M = AccountMetadata["methods"];
-
 // when target is not typed, thus inferred, we get a type instantiation is excessively deep issue. Why?
 let a: Account = newEntity(accountMetadata, {
     name: "Test Account",
     accountNumber: "1234567890",
 });
 
-let c = newEntity(contactMetadata, {});
+newEntity(contactMetadata, {});
 
 console.log(a.getKey());
 console.log(a.append("Test"));
@@ -53,4 +51,4 @@ const account = await testApi.accounts.retrieve(accountId);
 
 console.log(account);
 
-const aas = await testApi.accounts.retrieveMultiple()
+await testApi.accounts.retrieveMultiple()
