@@ -1,10 +1,11 @@
 import { debugThrow, type Issue } from "./Helpers";
 import type { ClearTags, HasTag } from "./Helpers";
 import { newGuid } from "./Helpers";
-import type { Entity, EntityMetadata, FieldMetadata, GetMetadata, GetSchemaName } from "./Metadata";
+import type { Entity, EntityMetadata, FieldMetadata, GetSchemaName } from "./Metadata";
 import { getTypeDescriptor } from "./Metadata";
 import { entityMutationFields, entityStateFields, type EntityMutationFields, type EntityStateFields } from "./Metadata/DefaultFields";
-import type { TypeFromMetadata } from "./Metadata/Derive";
+import type { TypeFromMetadata, BaseTypeFromMetadata } from "./Metadata/Derive";
+import { hasMethods } from "./Metadata/Methods";
 import type { CoreServerType, EntityData, EntityReference } from "./Types";
 
 const trackingDataTag = Symbol();
@@ -12,8 +13,7 @@ const trackingDataTag = Symbol();
 type EntityState = "newUnsaved" | "unchanged" | "changed" | "markedForDeletion" | "abandoned";
 
 interface TrackingData<
-	TMetadata extends EntityMetadata<TSchemaName>,
-	TSchemaName extends string = TMetadata["schemaName"]
+	TMetadata extends EntityMetadata = EntityMetadata,
 >
 {
 	metadata: TMetadata,
@@ -45,12 +45,13 @@ const stateAndMutationFields = {
 export function newEntity<
 	TMetadata extends EntityMetadata<TSchemaName>,
 	TSchemaName extends string = TMetadata["schemaName"],
-	TEntity = TypeFromMetadata<TMetadata>
+	TBaseEntity = BaseTypeFromMetadata<TMetadata>,
+	TEntity = TypeFromMetadata<TMetadata>,
 >(
 	metadata: TMetadata,
 	// if final initData type is emtpy, we allow no initData to be passed (make it optional argument)
 	// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-	...initData: {} extends NoInfer<EntityInitData<TEntity>> ? [NoInfer<EntityInitData<TEntity>>?] : [NoInfer<EntityInitData<TEntity>>]
+	...initData: {} extends NoInfer<EntityInitData<TBaseEntity>> ? [NoInfer<EntityInitData<TBaseEntity>>?] : [NoInfer<EntityInitData<TBaseEntity>>]
 ): NonNullable<TEntity> // no idea why nonnullable is needed here. TypeFromMetadata should already be non-nullable
 {
 	const data: Record<string, unknown> = initData?.[0] ?? {};
@@ -102,13 +103,13 @@ export function newEntity<
 export function mapEntity<
 	TMetadata extends EntityMetadata<TSchemaName>,
 	TSchemaName extends string = TMetadata["schemaName"],
-	TEntity = TypeFromMetadata<TMetadata>
+	TEntity = BaseTypeFromMetadata<TMetadata>
 >(
 	metadata: TMetadata,
 	entityData: EntityData,
 ): TEntity
 {
-	const trackingData: TrackingData<TMetadata, TSchemaName> = {
+	const trackingData: TrackingData<TMetadata> = {
 		metadata,
 		original: entityData,
 		changes: {},
@@ -194,8 +195,28 @@ export function mapEntity<
 				let value = undefined;
 
 				const field = metadata.fields[key];
-				if (!field)
+				if(!field)
+				{
+					if(hasMethods(metadata))
+					{
+						const method = metadata.methods[key];
+
+						// method found, invoke
+						if (method && typeof method === "function") {
+							return (...args: unknown[]) => {
+								const result = method(proxy);
+
+								// returned result is a function, we have a curried function
+								// call the inner with args
+								if(typeof result === "function")
+									return result(...args);
+								return result;
+							}
+						}
+					}
+
 					return value;
+				}
 
 				if (field && !field.schemaName)
 					debugThrow(new Error(`The field ${key} is missing a schema name`));
@@ -327,14 +348,14 @@ export function getTrackingData<
 >(
 	entity: TEntity,
 )
-	: TrackingData<GetMetadata<TEntity>> | undefined
+	: TrackingData | undefined
 {
 	if (!entity)
 		return undefined;
 	if (!(trackingDataTag in entity))
 		return undefined;
 
-	return entity[trackingDataTag] as TrackingData<GetMetadata<TEntity>> | undefined;
+	return entity[trackingDataTag] as TrackingData | undefined;
 }
 
 /**
@@ -352,12 +373,12 @@ export function getChanges<TEntity extends Entity>(entity: TEntity): EntityData 
  * @param entity The entity to get the metadata for/from
  * @returns The metadata or undefined if the entity is not a tracked entity
  */
-export function getMetadata<TEntity extends Entity>(entity?: TEntity): GetMetadata<TEntity> | undefined
+export function getMetadata<TEntity extends Entity>(entity?: TEntity): EntityMetadata | undefined
 {
 	if (!entity)
 		return undefined;
 
-	return (getTrackingData(entity)?.metadata ?? undefined) as GetMetadata<TEntity> | undefined;
+	return (getTrackingData(entity)?.metadata ?? undefined) as EntityMetadata | undefined;
 }
 
 /**

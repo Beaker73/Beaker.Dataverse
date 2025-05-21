@@ -1,6 +1,6 @@
 import { abandonEntity, getMetadata, getTrackingData, mapEntity } from "./EntityMapper";
 import { debugThrow, Guid } from "./Helpers";
-import { Entity, EntityMetadata, TypeFromMetadata } from "./Metadata";
+import { Entity, EntityMetadata, BaseTypeFromMetadata } from "./Metadata";
 import { matchToQuery, queryToFilter } from "./Queries/Conversion";
 import { EntityMatch } from "./Queries/Match";
 import { mergeQueries } from "./Queries/Merge";
@@ -153,7 +153,7 @@ export function dataverseApi(connector: ApiConnector)
 	async function retrieveMultiple<
 		TMetadata extends EntityMetadata<TSchemaName>,
 		TSchemaName extends string = TMetadata["schemaName"],
-		T = TypeFromMetadata<TMetadata>,
+		T = BaseTypeFromMetadata<TMetadata>,
 		TExpectSingle extends boolean = false,
 		TRequireData extends boolean = false,
 	>(
@@ -237,7 +237,7 @@ export function dataverseApi(connector: ApiConnector)
 }
 
 
-function odataMapEntity<TMetadata extends EntityMetadata>(metadata: TMetadata, unmapped: EntityData): TypeFromMetadata<TMetadata>
+function odataMapEntity<TMetadata extends EntityMetadata>(metadata: TMetadata, unmapped: EntityData): BaseTypeFromMetadata<TMetadata>
 {
 	// special reference handling, move _<schema>_value to <schema>
 	Object.values(metadata.fields)

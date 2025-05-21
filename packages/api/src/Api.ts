@@ -1,6 +1,6 @@
 import { ApiConnector, DataverseAction } from "./Types/Connector";
 import { TypedApi } from "./Types/TypedApi";
-import { TypeFromMetadata } from "./Metadata/Derive";
+import { BaseTypeFromMetadata } from "./Metadata/Derive";
 import { EntityMetadata } from "./Metadata/Entity";
 import { DataverseApi, dataverseApi } from "./DataverseApi";
 import { Guid } from "./Helpers";
@@ -50,7 +50,7 @@ export function api<TOptions extends ApiOptions>(options: TOptions)
 
     function typedApi<TMetadata extends EntityMetadata>(metadata: TMetadata) {
 
-        type TEntity = TypeFromMetadata<TMetadata>;
+        type TEntity = BaseTypeFromMetadata<TMetadata>;
         type TSchemaName = TMetadata["schemaName"];
 
         return {

@@ -7,17 +7,15 @@ export type LogicalName = Tag<string, "type", "LogicalName">;
  * @param name The schema name to convert to a logical name
  * @returns The logical name
  */
-export function logicalName(name: string): LogicalName 
-{
+export function logicalName(name: string): LogicalName {
 	return name.toLowerCase() as LogicalName;
 }
 
 /** Metadata to represent an entity in DataVerse */
 export interface EntityMetadata<
 	TSchemaName extends string = string,
-	TFields extends Record<string, FieldMetadata> = Record<string, FieldMetadata>
->
-{
+	TFields extends Record<string, FieldMetadata> = Record<string, FieldMetadata>,
+> {
 	/** The schema name of the entity */
 	schemaName: TSchemaName,
 	/** The fields of the entity */
@@ -33,8 +31,7 @@ export const knownEntityMetadata: Record<string, EntityMetadata> = {};
  * @param schemaName The schema name of the entity to get the metadata for
  * @returns The metadata for the entity
  */
-export function metadata<TSchemaName extends string>(schemaName: TSchemaName)
-{
+export function metadata<TSchemaName extends string>(schemaName: TSchemaName) {
 	const metadata = knownEntityMetadata[schemaName];
 
 	if (!metadata)
@@ -43,15 +40,13 @@ export function metadata<TSchemaName extends string>(schemaName: TSchemaName)
 	return metadata as EntityMetadata<TSchemaName>;
 }
 
-export function findMetadataByLogicalName(logicalName: string)
-{
+export function findMetadataByLogicalName(logicalName: string) {
 	return Object
 		.values(knownEntityMetadata)
 		.find(e => e.schemaName.toLowerCase() === logicalName);
 }
 
-export interface EntityOptions
-{
+export interface EntityOptions {
 	/** Mark this entity as readonly, thus changes will not be allowed. */
 	isReadOnly?: boolean,
 }
@@ -70,8 +65,7 @@ export function entity<
 	schemaName: TSchemaName,
 	fields: TFields,
 	options?: EntityOptions,
-)
-{
+) {
 	if (schemaName in knownEntityMetadata)
 		if (!import.meta.hot)
 			throw new Error(`Entity metadata already exists for entity with schema name '${schemaName}'`);
@@ -84,53 +78,36 @@ export function entity<
 
 	// store the metadata
 	knownEntityMetadata[schemaName] = metadata;
-
 	return metadata;
 }
 
 type EntityTag<TSchemaName extends string = string> = Tag<{ id: Guid<TSchemaName>; }, "type", "Entity">;
 export type Entity<TMetadata extends EntityMetadata | undefined = undefined> =
 	TMetadata extends undefined
-		?
-		Tag<
-		Tag<
+	?
+	Tag<
 		EntityTag<string>,
 		"schemaName",
 		string
-		>,
-		"metadata",
-		EntityMetadata
-		>
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		: TMetadata extends EntityMetadata<infer TSchemaName, infer _TFields>
-			?
-			Tag<
-			Tag<
-			EntityTag<TSchemaName>,
-			"schemaName",
-			TSchemaName
-			>,
-			"metadata",
-			TMetadata
-			>
-			:
-			Tag<
-			Tag<
-			EntityTag<string>,
-			"schemaName",
-			string
-			>,
-			"metadata",
-			EntityMetadata
-			>
+	>
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	: TMetadata extends EntityMetadata<infer TSchemaName, infer _TFields>
+	?
+	Tag<
+		EntityTag<TSchemaName>,
+		"schemaName",
+		TSchemaName
+	>
+	:
+	Tag<
+		EntityTag<string>,
+		"schemaName",
+		string
+	>
 	;
 
 // type TBareEntity = Entity;
 // type TTypedEntity = Entity<AccountMetadata>;
-
-export type GetMetadata<TEntity extends Entity> = TEntity extends HasTag<"metadata">
-	? GetTag<TEntity, "metadata">
-	: never;
 
 export type GetSchemaName<TEntity> = TEntity extends HasTag<"schemaName">
 	? GetTag<TEntity, "schemaName">
