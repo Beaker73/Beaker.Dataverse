@@ -41,7 +41,7 @@ export interface StringFieldOptions extends FieldOptions
  * @param options The options for the string field
  * @returns The metadata representing the string field
  */
-function stringConstructor<
+export function stringConstructor<
 	TSchemaName extends string,
 	TOptions extends StringFieldSetupOptions,
 	TSubType extends string = string,

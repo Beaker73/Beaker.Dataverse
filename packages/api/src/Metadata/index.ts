@@ -1,9 +1,5 @@
-export * from "../Api";
 export * from "./Boolean";
 export * from "./DateTime";
-export * from "./DefaultFields";
-export * from "./Derive";
-export * from "./Entity";
 export * from "./Field";
 export * from "./Float";
 export * from "./Id";
@@ -14,6 +10,10 @@ export * from "./Money";
 export * from "./OptionSet";
 export * from "./Reference";
 export * from "./String";
+
+export * from "./DefaultFields";
+export * from "./Derive";
+export * from "./Entity";
 export * from "./Methods";
 
 import type { BooleanFieldMetadata } from "./Boolean";
@@ -28,7 +28,13 @@ import type { OptionSetFieldMetadata } from "./OptionSet";
 import type { ReferenceFieldMetadata } from "./Reference";
 import type { StringFieldMetadata } from "./String";
 
-export type FieldMetadata =
+/// Type Extension Point
+/// Add: FieldTypes field of types with you extensions
+export interface Extensions
+{
+}
+
+export type CoreFieldMetadata =
 	| BooleanFieldMetadata
 	| DateTimeFieldMetadata
 	| FloatFieldMetadata
@@ -42,3 +48,8 @@ export type FieldMetadata =
 	| StringFieldMetadata
 	;
 
+export type FieldMetadata = 
+	Extensions extends { "customTypes": infer TCustomTypes } 
+		? CoreFieldMetadata | TCustomTypes 
+		: CoreFieldMetadata
+	;

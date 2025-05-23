@@ -65,6 +65,10 @@ export type TypeOperations<
 
 const fieldTypes: Record<string, TypeDescriptor> = {};
 
+export function typeOf<T>(): [T] {
+    return [undefined as unknown as T];
+}
+
 /** registers a new field type */
 export function fieldType<
 	const TCtor extends (
