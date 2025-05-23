@@ -230,7 +230,7 @@ export async function odataConnector(url: URL, options?: { baseUrl?: string, tok
 				// only process references that are not null
 				const value = data[f.schemaName.toLowerCase()];
 
-				const newKey = `${f.schemaName}@odata.bind`;
+				const newKey = `${f.schemaName.toLowerCase()}@odata.bind`;
 				let newValue: string | null = null;
 
 				if(typeof value === "object" && value !== null && "id" in value && typeof value.id === "string") 
