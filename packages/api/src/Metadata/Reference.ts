@@ -24,21 +24,22 @@ export interface ReferenceFieldOptions extends FieldOptions
 }
 
 export function referenceConstructor<
-	TFieldSchemaName extends string,
-	TOptions extends ReferenceFieldSetupOptions,
+	const TFieldSchemaName extends string,
+	const Options extends ReferenceFieldSetupOptions,
 >(
 	schemaName: TFieldSchemaName,
-	options?: TOptions,
+	options?: Options,
 )
 {
-	type Target = TOptions["targetSchemaName"] extends string ? TOptions["targetSchemaName"] : never;
+	type Target = Options["targetSchemaName"] extends string ? Options["targetSchemaName"] : never;
 	type Reference = EntityReference<Target>;
 
 	const metadata = {
 		schemaName,
 		type: "reference",
 		options: {
-			optional: (options?.optional ?? false) as TOptions extends { optional: true } ? true : false,
+			optional: (options?.optional ?? false) as Options extends { optional: true } ? true : false,
+			readOnly: (options?.readOnly ?? false) as Options extends { readOnly: true } ? true : false,
 			targetSchemaName: options?.targetSchemaName as Target,
 		} satisfies ReferenceFieldOptions,
 	} satisfies ReferenceFieldMetadata;

@@ -42,22 +42,23 @@ export interface StringFieldOptions extends FieldOptions
  * @returns The metadata representing the string field
  */
 export function stringConstructor<
-	TSchemaName extends string,
-	TOptions extends StringFieldSetupOptions,
-	TSubType extends string = string,
+	const TSchemaName extends string,
+	const Options extends StringFieldSetupOptions,
+	const TSubType extends string = string,
 >(
 	schemaName: TSchemaName,
-	options?: TOptions,
+	options?: Options,
 )
 {
 	const metadata = {
 		schemaName,
 		type: "string",
 		options: {
-			optional: (options?.optional ?? false) as TOptions extends { optional: true } ? true : false,
-			maxLength: (options?.maxLength ?? 100) as TOptions extends { maxLength: infer N extends number } ? N : 100,
-			format: (options?.format ?? "plain") as TOptions extends { format: infer TFormat extends StringFormat } ? (TFormat extends undefined ? "plain" : TFormat) : StringFormat,
-			key: (options?.key ?? false) as TOptions extends { key: true } ? true : false,
+			optional: (options?.optional ?? false) as Options extends { optional: true } ? true : false,
+			readOnly: (options?.readOnly ?? false) as Options extends { readOnly: true } ? true : false,
+			maxLength: (options?.maxLength ?? 100) as Options extends { maxLength: infer N extends number } ? N : 100,
+			format: (options?.format ?? "plain") as Options extends { format: infer TFormat extends StringFormat } ? (TFormat extends undefined ? "plain" : TFormat) : StringFormat,
+			key: (options?.key ?? false) as Options extends { key: true } ? true : false,
 		} satisfies StringFieldOptions,
 	} satisfies StringFieldMetadata;
 

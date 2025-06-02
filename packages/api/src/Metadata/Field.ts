@@ -7,6 +7,8 @@ import type { FieldType } from "./Derive";
 export interface FieldSetupOptions {
 	/** Whether the field is optional, i.e. if it allows null */
 	optional?: boolean,
+	/** Whether the field will never post/submit to the server, but only fetched. Does not allow writing the field, does never post/patch the value. Does Get the value from the server */
+	readOnly?: boolean,
 }
 
 
@@ -40,6 +42,8 @@ export type CoreType<TFieldMetadata> = TFieldMetadata extends {	[coreTypeKey]: i
 export interface FieldOptions {
 	/** If the field is optional (i.e. if null is allowed) */
 	optional: boolean,
+	/** Whether the field will never post/submit to the server, but only fetched. Does not allow writing the field, does never post/patch the value. Does Get the value from the server */
+	readOnly: boolean,
 	/** The optional default value if the value is null and the field is not optional. If not given the system will throw, if given the default is used instead. */
 	defaultValue?: unknown
 }

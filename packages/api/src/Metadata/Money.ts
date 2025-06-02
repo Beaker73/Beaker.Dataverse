@@ -32,7 +32,7 @@ export interface MoneyFieldOptions extends FieldOptions {
  * @returns The metadata representing the money field
  */
 function moneyConstructor<
-	SchemaName extends string,
+	const SchemaName extends string,
 	const Options extends MoneyFieldSetupOptions
 >(
 	schemaName: SchemaName,
@@ -44,6 +44,7 @@ function moneyConstructor<
 		type: "money",
 		options: {
 			optional: (options?.optional ?? false) as Options extends { optional: true } ? true : false,
+			readOnly: (options?.readOnly ?? false) as Options extends { readOnly: true } ? true : false,
 			decimals: (options?.decimals ?? 4) as Options extends { decimals: infer N extends number } ? N : 4,
 		} satisfies MoneyFieldOptions,
 	} satisfies MoneyFieldMetadata;

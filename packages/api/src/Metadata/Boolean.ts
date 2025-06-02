@@ -3,6 +3,8 @@ import { coreTag, fieldType, type FieldMetadataBase, type FieldOptions, type Fie
 /** The options for setting up a boolean field */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface BooleanFieldSetupOptions extends FieldSetupOptions {
+	/** If the value is null, it will be replaced by this value. If optional is set, it will be ignored and type will not be null */
+	defaultValue?: boolean,
 }
 
 /** The metadata that represents an boolean field */
@@ -25,8 +27,8 @@ export interface BooleanFieldOptions extends FieldOptions {
  * @returns The metadata representing the boolean field
  */
 export function booleanConstructor<
-	SchemaName extends string,
-	Options extends BooleanFieldSetupOptions,
+	const SchemaName extends string,
+	const Options extends BooleanFieldSetupOptions,
 >(
 	schemaName: SchemaName,
 	options?: Options,
@@ -36,8 +38,9 @@ export function booleanConstructor<
 		schemaName,
 		type: "boolean",
 		options: {
-			optional: options?.optional ?? false,
-			defaultValue: false,
+			optional: (options?.optional ?? false) as Options extends { readOnly: true } ? true : false,
+			readOnly: (options?.readOnly ?? false) as Options extends { readOnly: true } ? true : false,
+			defaultValue: options?.defaultValue ?? undefined,
 		} satisfies BooleanFieldOptions,
 	} satisfies BooleanFieldMetadata;
 

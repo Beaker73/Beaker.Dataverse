@@ -41,21 +41,22 @@ export interface OptionSetFieldOptions<T = unknown>
 }
 
 export function optionSetConstructor<
-	TFieldSchemaName extends string,
-	TOptions extends OptionSetFieldSetupOptions<T>,
-	T = unknown,
+	const TFieldSchemaName extends string,
+	const Options extends OptionSetFieldSetupOptions<T>,
+	const T = unknown,
 >(
 	schemaName: TFieldSchemaName,
-	options?: TOptions,
+	options?: Options,
 ) 
 {
-	type TEnumMetadata = TOptions extends { enumMetadata: infer TEnum } ? undefined extends TEnum ? EnumMetadata : TEnum : EnumMetadata;
+	type TEnumMetadata = Options extends { enumMetadata: infer TEnum } ? undefined extends TEnum ? EnumMetadata : TEnum : EnumMetadata;
 
 	const metadata = {
 		schemaName,
 		type: "optionSet",
 		options: {
-			optional: (options?.optional ?? false) as TOptions extends { optional: true } ? true : false,
+			optional: (options?.optional ?? false) as Options extends { optional: true } ? true : false,
+			readOnly: (options?.readOnly ?? false) as Options extends { readOnly: true } ? true : false,
 			enumMetadata: options?.enumMetadata as TEnumMetadata,
 		} satisfies OptionSetFieldOptions,
 	} satisfies OptionSetFieldMetadata;

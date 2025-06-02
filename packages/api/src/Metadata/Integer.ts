@@ -33,8 +33,8 @@ export interface IntegerFieldOptions extends FieldOptions {
  * @returns The metadata representing the integer field
  */
 function integerConstructor<
-	SchemaName extends string,
-	Options extends IntegerFieldSetupOptions
+	const SchemaName extends string,
+	const Options extends IntegerFieldSetupOptions
 >(
 	schemaName: SchemaName,
 	options?: Options,
@@ -45,6 +45,7 @@ function integerConstructor<
 		type: "integer",
 		options: {
 			optional: (options?.optional ?? false) as Options extends { optional: true } ? true : false,
+			readOnly: (options?.readOnly ?? false) as Options extends { readOnly: true } ? true : false,
 			minValue: (options?.minValue ?? -2147483648) as Options extends { minValue: infer N extends number } ? N : -2147483648,
 			maxValue: (options?.maxValue ?? 2147483647) as Options extends { maxValue: infer N extends number } ? N : 2147483647,
 		} satisfies IntegerFieldOptions,

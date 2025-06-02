@@ -5,9 +5,10 @@ import type { CoreType, FieldMetadataBase } from "./Field";
 
 /** make field nullable if it was marked as optional */
 type MaybeOptional<TCore, TField extends FieldMetadataBase> = TField extends { options: { optional: true } } ? TCore | null : TCore;
+type MaybeReadonly<TCore, TField extends FieldMetadataBase> = TField extends { options: { readOnly: true } } ? Readonly<{a: TCore}>["a"] : TCore;
 
 /** Determines the type of the field based on metadata */
-export type FieldType<TField extends FieldMetadataBase> = MaybeOptional<CoreType<TField>, TField>;
+export type FieldType<TField extends FieldMetadataBase> = MaybeReadonly<MaybeOptional<CoreType<TField>, TField>, TField>;
 
 /** Generates a type without methods from the entity metadata */
 export type BaseTypeFromMetadata<TMetadata> =

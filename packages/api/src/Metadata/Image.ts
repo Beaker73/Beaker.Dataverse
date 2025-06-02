@@ -18,8 +18,8 @@ export interface ImageFieldOptions extends FieldOptions
 }
 
 function imageConstructor<
-	TSchemaName extends string,
-	TOptions extends ImageFieldSetupOptions,
+	const TSchemaName extends string,
+	const TOptions extends ImageFieldSetupOptions,
 >(
 	schemaName: TSchemaName,
 	options?: TOptions,
@@ -30,6 +30,7 @@ function imageConstructor<
 		type: "image",
 		options: {
 			optional: (options?.optional ?? false) as TOptions extends { optional: true } ? true : false,
+			readOnly: (options?.readOnly ?? false) as TOptions extends { readOnly: true } ? true : false,
 			maxSize: (options?.maxSize ?? 10240 * 1024) as TOptions extends { maxSize: infer N extends number } ? N : 10240 * 1024,
 		} satisfies ImageFieldOptions,
 	} satisfies ImageFieldMetadata;

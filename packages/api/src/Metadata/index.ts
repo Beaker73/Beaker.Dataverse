@@ -1,4 +1,5 @@
 export * from "./Boolean";
+export * from "./Date";
 export * from "./DateTime";
 export * from "./Field";
 export * from "./Float";
@@ -17,6 +18,7 @@ export * from "./Entity";
 export * from "./Methods";
 
 import type { BooleanFieldMetadata } from "./Boolean";
+import { DateFieldMetadata } from "./Date";
 import type { DateTimeFieldMetadata } from "./DateTime";
 import type { FloatFieldMetadata } from "./Float";
 import type { IdFieldMetadata } from "./Id";
@@ -37,6 +39,7 @@ export interface Extensions
 export type CoreFieldMetadata =
 	| BooleanFieldMetadata
 	| DateTimeFieldMetadata
+	| DateFieldMetadata
 	| FloatFieldMetadata
 	| IdFieldMetadata
 	| ImageFieldMetadata

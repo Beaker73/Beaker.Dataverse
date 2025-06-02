@@ -1,16 +1,18 @@
-import { entity, key, string, TypeFromMetadata } from "./Metadata";
+import { date, entity, key, string, TypeFromMetadata } from "./Metadata";
 import { id } from "./Metadata/Id";
 import { odataConnector } from "./Connectors/OData";
 import { withMethods } from "./Metadata/Methods";
 import { newEntity } from "./EntityMapper";
 import { describe, test, expect } from "vitest";
 import { api } from "./Api";
+import { LocalDate } from "@js-joda/core";
 
 const accountMetadata = withMethods(
     entity("Account", {
         id: id("AccountId"),
         name: key("Name"),
-        accountNumber: string("AccountNumber", { maxLength: 20 }),
+        accountNumber: string("AccountNumber", { maxLength: 20, readOnly: true }),
+        date: date("DidSomethingOn", { optional: true }),
     }),
     {
         getKey: self => self.id,
@@ -29,10 +31,9 @@ type AccountId = Account["id"];
 // when target is not typed, thus inferred, we get a type instantiation is excessively deep issue. Why?
 let a: Account = newEntity(accountMetadata, {
     name: "Test Account",
-    accountNumber: "1234567890",
+    // accountNumber: "1234567890",
+    date: LocalDate.parse("2023-10-01"),
 });
-
-
 
 newEntity(contactMetadata, {});
 

@@ -19,7 +19,7 @@ export interface IdFieldOptions extends FieldOptions {
 }
 
 function idConstructor<
-	SchemaName extends string,
+	const SchemaName extends string,
 >(
 	schemaName: SchemaName,
 )
@@ -29,6 +29,7 @@ function idConstructor<
 		type: "id",
 		options: {
 			optional: false,
+			readOnly: true,
 		} satisfies IdFieldOptions,
 	} satisfies IdFieldMetadata;
 

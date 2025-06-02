@@ -17,21 +17,22 @@ export interface JsonFieldOptions extends FieldOptions
 }
 
 function jsonConstructor<
-	TSchemaName extends string,
-	TOptions extends JsonFieldSetupOptions,
-	TJsonType extends object = object,
+	const TSchemaName extends string,
+	const Options extends JsonFieldSetupOptions,
+	const TJsonType extends object = object,
 >(
 	schemaName: TSchemaName,
-	options?: TOptions,
+	options?: Options,
 )
 {
-	type TNullableJsonType = TOptions extends { optional: true } ? (TJsonType | null) : TJsonType;
+	type TNullableJsonType = Options extends { optional: true } ? (TJsonType | null) : TJsonType;
 
 	const metadata = {
 		schemaName,
 		type: "json",
 		options: {
-			optional: (options?.optional ?? false) as TOptions extends { optional: true } ? true : false,
+			optional: (options?.optional ?? false) as Options extends { optional: true } ? true : false,
+			readOnly: (options?.readOnly ?? false) as Options extends { readOnly: true } ? true : false,
 		} as JsonFieldOptions,
 	} as JsonFieldMetadata;
 

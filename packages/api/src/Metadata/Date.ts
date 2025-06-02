@@ -1,4 +1,4 @@
-import type { ZonedDateTime } from "@js-joda/core";
+import type { LocalDate } from "@js-joda/core";
 import { Instant, ZoneId } from "@js-joda/core";
 import "@js-joda/timezone/dist/js-joda-timezone-10-year-range";
 import type { FieldMetadataBase, FieldOptions, FieldSetupOptions } from "./Field";
@@ -6,23 +6,20 @@ import { coreTag, fieldType } from "./Field";
 
 /** The options for setting up a date-time field */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface DateTimeFieldSetupOptions extends FieldSetupOptions
-{
+export interface DateFieldSetupOptions extends FieldSetupOptions {
 }
 
 /** The metadta that represents a date-time field */
-export interface DateTimeFieldMetadata extends FieldMetadataBase
-{
+export interface DateFieldMetadata extends FieldMetadataBase {
 	/** The type of the field */
-	type: "dateTime",
+	type: "date",
 	/** The options for the date-time field */
-	options: DateTimeFieldOptions,
+	options: DateFieldOptions,
 }
 
 /** The configured options for a date-time field */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface DateTimeFieldOptions extends FieldOptions
-{
+export interface DateFieldOptions extends FieldOptions {
 }
 
 /**
@@ -31,29 +28,28 @@ export interface DateTimeFieldOptions extends FieldOptions
  * @param options The options for the date-time field
  * @returns The metadata representing the date-time field
  */
-function dateTimeConstructor<
+function dateConstructor<
 	const TSchemaName extends string,
-	const TOptions extends DateTimeFieldSetupOptions
+	const TOptions extends DateFieldSetupOptions
 >(
 	schemaName: TSchemaName,
 	options?: TOptions,
-)
-{
-	return coreTag<ZonedDateTime>()({
+) {
+	return coreTag<LocalDate>()({
 		schemaName,
-		type:"dateTime",
+		type: "date",
 		options: {
 			optional: (options?.optional ?? false) as TOptions extends { optional: true } ? true : false,
 			readOnly: (options?.readOnly ?? false) as TOptions extends { readOnly: true } ? true : false,
-		} satisfies DateTimeFieldOptions,
-	} satisfies DateTimeFieldMetadata);
+		} satisfies DateFieldOptions,
+	} satisfies DateFieldMetadata);
 }
 
 const amsterdam = ZoneId.of("Europe/Amsterdam");
 
-export const dateTime = fieldType(dateTimeConstructor, "dateTime", {
+export const date = fieldType(dateConstructor, "date", {
 	convert: {
-		toClientModel: value => Instant.parse(`${value}`).atZone(amsterdam),
+		toClientModel: value => Instant.parse(`${value}`).atZone(amsterdam).toLocalDate(),
 		toServerModel: value => Instant.from(value).toJSON(),
 	},
 });
