@@ -230,7 +230,13 @@ export async function odataConnector(url: URL, options?: { baseUrl?: string, tok
 				// only process references that are not null
 				const value = data[f.schemaName.toLowerCase()];
 
-				const newKey = `${f.schemaName.toLowerCase()}@odata.bind`;
+				let navName = f.schemaName.toLowerCase();
+				if(f.options.customNavigationName === true)
+					navName = f.schemaName;
+				else if(typeof f.options.customNavigationName === "string")
+					navName = f.options.customNavigationName;
+
+				const newKey = `${navName}@odata.bind`;
 				let newValue: string | null = null;
 
 				if(typeof value === "object" && value !== null && "id" in value && typeof value.id === "string") 
