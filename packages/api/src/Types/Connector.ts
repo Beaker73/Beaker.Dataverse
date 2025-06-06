@@ -21,7 +21,9 @@ export interface ApiConnector
 
 	whoAmI(): Promise<WhoAmIResponse>;
 	retrieveOptionSetValues(entitySchemaName: string, fieldSchemaName: string): Promise<Record<number, string>>
+	
 	getSetName(entityName: string): string | undefined;
+	getNavPropName(entityName: string, fieldName: string, targetEntity: string): Promise<string | undefined>;
 }
 
 export type DataverseAction<T extends object = object> = T & { 
