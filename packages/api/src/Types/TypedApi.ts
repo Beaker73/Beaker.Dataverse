@@ -4,14 +4,14 @@ import { Query } from "../Queries/Query";
 
 export type TypedApi<
     TMetadata extends EntityMetadata,
-    TEntity extends Entity = BaseTypeFromMetadata<TMetadata>,
-    TInvokeableEntity extends TEntity = TMetadata extends { "methods": any } ? ExtendedTypeFromMetadata<TMetadata> : TEntity,
+    TEntityData extends Entity = BaseTypeFromMetadata<TMetadata>,
+    TEntity extends TEntityData = TMetadata extends { "methods": any } ? ExtendedTypeFromMetadata<TMetadata> : TEntityData,
 > = {
-    create(entity: TEntity): Promise<TInvokeableEntity["id"]>,
-    update(entity: TEntity): Promise<void>,
-    delete(id: TEntity["id"]): Promise<void>,
-    saveChanges(entity: TEntity): Promise<TInvokeableEntity["id"]>,
-    retrieve(id: TEntity["id"], options?: { includeNamesOfReferences?: boolean }): Promise<TInvokeableEntity>,
+    create(entity: TEntityData): Promise<TEntity["id"]>,
+    update(entity: TEntityData): Promise<void>,
+    delete(id: TEntityData["id"]): Promise<void>,
+    saveChanges(entity: TEntityData): Promise<TEntity["id"]>,
+    retrieve(id: TEntityData["id"], options?: { includeNamesOfReferences?: boolean }): Promise<TEntity>,
     retrieveMultiple<TExpectSingle extends boolean = false, TRequireData extends boolean = false>(
         options?: {
             /** Matches by example */
@@ -25,5 +25,5 @@ export type TypedApi<
             /** Limit to the top n number of rows */
             top?: number,
         },
-    ): Promise<TExpectSingle extends true ? TInvokeableEntity : TInvokeableEntity[]>,
+    ): Promise<TExpectSingle extends true ? TEntity : TEntity[]>,
 };

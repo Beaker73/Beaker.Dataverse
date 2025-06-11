@@ -3,6 +3,7 @@ export * from "./Date";
 export * from "./DateTime";
 export * from "./Field";
 export * from "./Float";
+export * from "./Guid";
 export * from "./Id";
 export * from "./Image";
 export * from "./Integer";
