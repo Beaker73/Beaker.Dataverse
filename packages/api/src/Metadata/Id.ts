@@ -24,6 +24,8 @@ function idConstructor<
 	schemaName: SchemaName,
 )
 {
+	type TGuid = Guid<SchemaName>;
+
 	const metadata = {
 		schemaName,
 		type: "id",
@@ -32,7 +34,7 @@ function idConstructor<
 		} satisfies IdFieldOptions,
 	} satisfies IdFieldMetadata;
 
-	return coreTag<Guid>()(metadata);
+	return coreTag<TGuid>()(metadata);
 }
 
 export const id = fieldType(idConstructor, "id", {
