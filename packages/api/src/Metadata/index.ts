@@ -21,6 +21,7 @@ import type { BooleanFieldMetadata } from "./Boolean";
 import { DateFieldMetadata } from "./Date";
 import type { DateTimeFieldMetadata } from "./DateTime";
 import type { FloatFieldMetadata } from "./Float";
+import { GuidFieldMetadata } from "./Guid";
 import type { IdFieldMetadata } from "./Id";
 import type { ImageFieldMetadata } from "./Image";
 import type { IntegerFieldMetadata } from "./Integer";
@@ -41,6 +42,7 @@ export type CoreFieldMetadata =
 	| DateTimeFieldMetadata
 	| DateFieldMetadata
 	| FloatFieldMetadata
+	| GuidFieldMetadata
 	| IdFieldMetadata
 	| ImageFieldMetadata
 	| IntegerFieldMetadata

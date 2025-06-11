@@ -78,7 +78,7 @@ export function newEntity<
 			else if (key in stateAndMutationFields) {
 				// not set, correct, ignore
 			}
-			else if (!field.options.optional)
+			else if (!field.options.optional && !field.options.readOnly)
 				debugThrow(new Error(`The field '${key}' is required but not provided`));
 			else
 				entityData[field.schemaName.toLowerCase()] = null;

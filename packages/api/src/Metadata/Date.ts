@@ -1,5 +1,4 @@
-import type { LocalDate } from "@js-joda/core";
-import { Instant, ZoneId } from "@js-joda/core";
+import { Instant, LocalDate, LocalDateTime, ZoneId } from "@js-joda/core";
 import "@js-joda/timezone/dist/js-joda-timezone-10-year-range";
 import type { FieldMetadataBase, FieldOptions, FieldSetupOptions } from "./Field";
 import { coreTag, fieldType } from "./Field";
@@ -50,6 +49,9 @@ const amsterdam = ZoneId.of("Europe/Amsterdam");
 export const date = fieldType(dateConstructor, "date", {
 	convert: {
 		toClientModel: value => Instant.parse(`${value}`).atZone(amsterdam).toLocalDate(),
-		toServerModel: value => Instant.from(value).toJSON(),
+		toServerModel: value => {
+			const dt = value.atStartOfDay(amsterdam);
+			return Instant.from(dt).toJSON();
+		},
 	},
 });

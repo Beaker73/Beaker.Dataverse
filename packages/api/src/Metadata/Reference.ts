@@ -7,6 +7,11 @@ import { coreTag, fieldType, type FieldMetadataBase, type FieldOptions, type Fie
 export interface ReferenceFieldSetupOptions extends FieldSetupOptions
 {
 	targetSchemaName: string,
+
+	/** Sometimes the navigation property name is suddenly NOT the logical name. TODO figure out why. For Now this is a workaround, so you can supply your own name. */
+	customNavigationName?: string,
+	/** Sometimes the navigation property name is suddenly NOT the logical name. TODO figure out why. For Now this is a workaround, so you can switch to the schema name, what also often seems to happen. */
+	schemaNameAsNavigationName?: boolean,
 }
 
 export interface ReferenceFieldMetadata extends FieldMetadataBase
@@ -15,12 +20,15 @@ export interface ReferenceFieldMetadata extends FieldMetadataBase
 	type: "reference",
 	/** The options for the reference field */
 	options: ReferenceFieldOptions,
+	
 }
 
 export interface ReferenceFieldOptions extends FieldOptions
 {
 	/** The target entity for the reference */
 	targetSchemaName: string,
+	/** Sometimes the navigation property name is suddenly NOT the logical name. TODO figure out why. For Now this is a workaround, so you can supply your own name. */
+	customNavigationName: string | boolean,
 }
 
 export function referenceConstructor<
@@ -41,6 +49,7 @@ export function referenceConstructor<
 			optional: (options?.optional ?? false) as Options extends { optional: true } ? true : false,
 			readOnly: (options?.readOnly ?? false) as Options extends { readOnly: true } ? true : false,
 			targetSchemaName: options?.targetSchemaName as Target,
+			customNavigationName: options?.customNavigationName ?? options?.schemaNameAsNavigationName ?? false,
 		} satisfies ReferenceFieldOptions,
 	} satisfies ReferenceFieldMetadata;
 
