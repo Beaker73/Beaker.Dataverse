@@ -1,5 +1,5 @@
 import type { Issue } from "../Helpers";
-import type { FieldMetadata } from ".";
+import type { Entity, EntityMetadata, FieldMetadata } from ".";
 import type { CoreServerType } from "../Types";
 import type { FieldType } from "./Derive";
 
@@ -15,8 +15,8 @@ export interface FieldSetupOptions
 
 	/** optional converter added by user */
 	converter?: {
-		convert(value: unknown): unknown,
-		revert(value: unknown): unknown,
+		convert?: (value: any, entity?: Entity, metadata?: EntityMetadata) => unknown,
+		revert?: (value: any, entity?: Entity, metadata?: EntityMetadata) => unknown,
 	}
 }
 
@@ -61,8 +61,8 @@ export interface FieldOptions
 	
 	/** optional converter added by user */
 	converter: null | {
-		convert(value: unknown): unknown,
-		revert(value: unknown): unknown,
+		convert?: (value: any, entity?: Entity, metadata?: EntityMetadata) => unknown,
+		revert?: (value: any, entity?: Entity, metadata?: EntityMetadata) => unknown,
 	}
 }
 

@@ -72,7 +72,7 @@ describe("Live Integration Tests", async () => {
     });
 
     // when target is not typed, thus inferred, we get a type instantiation is excessively deep issue. Why?
-    let _account: Account = newEntity(accountMetadata, {
+    newEntity(accountMetadata, {
         name: "Test Account",
     });
 

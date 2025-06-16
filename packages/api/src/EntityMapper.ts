@@ -159,7 +159,7 @@ export function mapEntity<
 				// conversion
 				value = convertFieldToServer(field, value);
 				if(field.options.converter && field.options.converter.revert)
-					value = field.options.converter.revert(value);
+					value = field.options.converter.revert(value, _obj, metadata);
 
 				// if new or changed, set value
 				if (!(logicalName in trackingData.original) || trackingData.original[logicalName] !== value) {
@@ -229,7 +229,7 @@ export function mapEntity<
 
 				value = convertFieldToClient(field, value ?? null);
 				if (field.options.converter && field.options.converter.convert)
-					value = field.options.converter.convert(value);
+					value = field.options.converter.convert(value, _obj, metadata);
 
 				return value ?? field.options.defaultValue ?? null;
 			}
