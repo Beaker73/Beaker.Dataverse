@@ -6,12 +6,24 @@ import { newEntity } from "./EntityMapper";
 import { describe, test, expect } from "vitest";
 import { api } from "./Api";
 import { guid } from "./Metadata/Guid";
+import { Tag } from "./Helpers";
+
+type ReversedString = Tag<string, "variant", "Reversed">;
 
 const accountMetadata = withMethods(
     entity("Account", {
         id: id("AccountId"),
         name: key("Name"),
-        accountNumber: string("AccountNumber", { maxLength: 20, readOnly: true }),
+        accountNumber: string("AccountNumber", {
+            maxLength: 20, readOnly: true, converter: {
+                convert(value: string) {
+                    return value.split("").reverse().join("") as ReversedString;
+                },
+                revert(value: ReversedString) {
+                    return value.split("").reverse().join("");
+                }
+            }
+        }),
     }),
     {
         getKey: self => self.id,
@@ -19,9 +31,6 @@ const accountMetadata = withMethods(
     }
 );
 
-const contactMetadata = entity("Contact", {
-    id: id("ContactId"),
-});
 
 type AccountMetadata = typeof accountMetadata;
 type Account = TypeFromMetadata<AccountMetadata>;
@@ -63,16 +72,9 @@ describe("Live Integration Tests", async () => {
     });
 
     // when target is not typed, thus inferred, we get a type instantiation is excessively deep issue. Why?
-    let a = newEntity(accountMetadata, {
+    let _account: Account = newEntity(accountMetadata, {
         name: "Test Account",
-        //accountNumber: "1234567890",
     });
-
-    newEntity(contactMetadata, {});
-
-    console.log(a.getKey());
-    console.log(a.append("Test"));
-
 
     describe("Integration", async () => {
 
@@ -117,6 +119,7 @@ describe("Live Integration Tests", async () => {
 
             expect(account.id).toBe(accountId);
             expect(account.name).toBe("12Banaan B.V.12345");
+            expect(account.accountNumber).toBe("2991000000");
         });
 
     });

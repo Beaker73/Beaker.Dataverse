@@ -6,13 +6,11 @@ import { coreTag, fieldType } from "./Field";
 
 /** The options for setting up a date-time field */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface DateTimeFieldSetupOptions extends FieldSetupOptions
-{
+export interface DateTimeFieldSetupOptions extends FieldSetupOptions {
 }
 
 /** The metadta that represents a date-time field */
-export interface DateTimeFieldMetadata extends FieldMetadataBase
-{
+export interface DateTimeFieldMetadata extends FieldMetadataBase {
 	/** The type of the field */
 	type: "dateTime",
 	/** The options for the date-time field */
@@ -21,8 +19,7 @@ export interface DateTimeFieldMetadata extends FieldMetadataBase
 
 /** The configured options for a date-time field */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface DateTimeFieldOptions extends FieldOptions
-{
+export interface DateTimeFieldOptions extends FieldOptions {
 }
 
 /**
@@ -37,14 +34,20 @@ function dateTimeConstructor<
 >(
 	schemaName: TSchemaName,
 	options?: TOptions,
-)
-{
-	return coreTag<ZonedDateTime>()({
+) {
+	type TType = TOptions extends { converter: infer TUserConverter }
+		? TUserConverter extends { convert(value: any): infer TUserValue }
+		? TUserValue
+		: ZonedDateTime
+		: ZonedDateTime;
+
+	return coreTag<TType>()({
 		schemaName,
-		type:"dateTime",
+		type: "dateTime",
 		options: {
 			optional: (options?.optional ?? false) as TOptions extends { optional: true } ? true : false,
 			readOnly: (options?.readOnly ?? false) as TOptions extends { readOnly: true } ? true : false,
+			converter: options?.converter ?? null,
 		} satisfies DateTimeFieldOptions,
 	} satisfies DateTimeFieldMetadata);
 }

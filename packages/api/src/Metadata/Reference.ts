@@ -41,6 +41,11 @@ export function referenceConstructor<
 {
 	type Target = Options["targetSchemaName"] extends string ? Options["targetSchemaName"] : never;
 	type Reference = EntityReference<Target>;
+	type TType = Options extends { converter: infer TUserConverter } 
+		? TUserConverter extends { convert(value: any): infer TUserValue }
+			? TUserValue
+			: Reference
+		: Reference;
 
 	const metadata = {
 		schemaName,
@@ -50,10 +55,11 @@ export function referenceConstructor<
 			readOnly: (options?.readOnly ?? false) as Options extends { readOnly: true } ? true : false,
 			targetSchemaName: options?.targetSchemaName as Target,
 			customNavigationName: options?.customNavigationName ?? options?.schemaNameAsNavigationName ?? false,
+			converter: options?.converter ?? null,
 		} satisfies ReferenceFieldOptions,
 	} satisfies ReferenceFieldMetadata;
 
-	return coreTag<Reference>()(metadata);
+	return coreTag<TType>()(metadata);
 }
 
 const coreReference = fieldType(referenceConstructor, "reference", {});

@@ -34,12 +34,19 @@ function dateConstructor<
 	schemaName: TSchemaName,
 	options?: TOptions,
 ) {
-	return coreTag<LocalDate>()({
+	type TType = TOptions extends { converter: infer TUserConverter }
+		? TUserConverter extends { convert(value: any): infer TUserValue }
+			? TUserValue
+			: LocalDate
+		: LocalDate;
+
+	return coreTag<TType>()({
 		schemaName,
 		type: "date",
 		options: {
 			optional: (options?.optional ?? false) as TOptions extends { optional: true } ? true : false,
 			readOnly: (options?.readOnly ?? false) as TOptions extends { readOnly: true } ? true : false,
+			converter: options?.converter ?? null,
 		} satisfies DateFieldOptions,
 	} satisfies DateFieldMetadata);
 }

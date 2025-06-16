@@ -39,6 +39,9 @@ function moneyConstructor<
 	options?: Options,
 )
 {
+	
+
+
 	const metadata = {
 		schemaName,
 		type: "money",
@@ -46,13 +49,19 @@ function moneyConstructor<
 			optional: (options?.optional ?? false) as Options extends { optional: true } ? true : false,
 			readOnly: (options?.readOnly ?? false) as Options extends { readOnly: true } ? true : false,
 			decimals: (options?.decimals ?? 4) as Options extends { decimals: infer N extends number } ? N : 4,
+			converter: options?.converter ?? null,
 		} satisfies MoneyFieldOptions,
 	} satisfies MoneyFieldMetadata;
 
 	type DeriveCoreType<TField> = TField extends { options: { decimals: infer N extends number } } ? Money<N> : bigint;
 	type MoneyType = DeriveCoreType<typeof metadata>;
+	type TType = Options extends { converter: infer TUserConverter } 
+		? TUserConverter extends { convert(value: any): infer TUserValue }
+			? TUserValue
+			: MoneyType
+		: MoneyType;
 
-	return coreTag<MoneyType>()(metadata);
+	return coreTag<TType>()(metadata);
 }
 
 

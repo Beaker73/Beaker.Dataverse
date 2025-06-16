@@ -32,6 +32,7 @@ function idConstructor<
 		options: {
 			optional: false,
 			readOnly: true,
+			converter: null,
 		} satisfies IdFieldOptions,
 	} satisfies IdFieldMetadata;
 

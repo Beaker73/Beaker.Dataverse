@@ -25,6 +25,12 @@ export function guidConstructor<
     options?: TOptions,
 ) {
     type TGuid = Guid<TOptions["targetSchemaName"]>;
+    type TType = TOptions extends { converter: infer TUserConverter } 
+        ? TUserConverter extends { convert(value: any): infer TUserValue }
+            ? TUserValue
+            : TGuid
+        : TGuid
+
 
     const metadata = {
         schemaName,
@@ -33,10 +39,11 @@ export function guidConstructor<
             optional: (options?.optional ?? false) as TOptions extends { optional: true } ? true : false,
             readOnly: (options?.readOnly ?? false) as TOptions extends { readOnly: true } ? true : false,
             targetSchemaName: (options as GuidFieldSetupOptions).targetSchemaName,
-        } satisfies GuidFieldSetupOptions,
+            converter: options?.converter ?? null,
+        } satisfies GuidFieldOptions,
     } satisfies GuidFieldMetadata;
 
-    return coreTag<TGuid>()(metadata);
+    return coreTag<TType>()(metadata);
 }
 
 const coreGuid = fieldType(guidConstructor, "guid", {
