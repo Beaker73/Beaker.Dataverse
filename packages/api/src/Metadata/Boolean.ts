@@ -32,16 +32,23 @@ export function booleanConstructor<
 	options?: Options,
 )
 {
+	type TType = Options extends { converter: infer TUserConverter } 
+		? TUserConverter extends { convert(value: any): infer TUserValue }
+			? TUserValue
+			: boolean
+		: boolean;
+
 	const metadata = {
 		schemaName,
 		type: "boolean",
 		options: {
 			optional: options?.optional ?? false,
 			defaultValue: false,
+			converter: options?.converter ?? null,
 		} satisfies BooleanFieldOptions,
 	} satisfies BooleanFieldMetadata;
 
-	return coreTag<boolean>()(metadata);
+	return coreTag<TType>()(metadata);
 }
 
 export const boolean = fieldType(booleanConstructor, "boolean");

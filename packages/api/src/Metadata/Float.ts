@@ -33,13 +33,19 @@ export interface FloatFieldOptions extends FieldOptions {
  * @returns The metadata representing the float field
  */
 function floatConstructor<
-	SchemaName extends string,
-	Options extends FloatFieldSetupOptions
+	const SchemaName extends string,
+	const Options extends FloatFieldSetupOptions
 >(
 	schemaName: SchemaName,
 	options?: Options,
 )
 {
+	type TType = Options extends { converter: infer TUserConverter } 
+		? TUserConverter extends { convert(value: any): infer TUserValue }
+			? TUserValue
+			: number
+		: number;
+
 	const metadata = {
 		schemaName,
 		type: "float",
@@ -47,10 +53,11 @@ function floatConstructor<
 			optional: (options?.optional ?? false) as Options extends { optional: true } ? true : false,
 			minValue: (options?.minValue ?? -2147483648) as Options extends { minValue: infer N extends number } ? N : -2147483648,
 			maxValue: (options?.maxValue ?? 2147483647) as Options extends { maxValue: infer N extends number } ? N : 2147483647,
+			converter: options?.converter ?? null,
 		} satisfies FloatFieldOptions,
 	} satisfies FloatFieldMetadata;
 
-	return coreTag<number>()(metadata);
+	return coreTag<TType>()(metadata);
 }
 
 export const float = fieldType(floatConstructor, "float", {

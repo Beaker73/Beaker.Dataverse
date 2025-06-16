@@ -33,13 +33,19 @@ export interface IntegerFieldOptions extends FieldOptions {
  * @returns The metadata representing the integer field
  */
 function integerConstructor<
-	SchemaName extends string,
-	Options extends IntegerFieldSetupOptions
+	const SchemaName extends string,
+	const Options extends IntegerFieldSetupOptions
 >(
 	schemaName: SchemaName,
 	options?: Options,
 )
 {
+	type TType = Options extends { converter: infer TUserConverter } 
+		? TUserConverter extends { convert(value: any): infer TUserValue }
+			? TUserValue
+			: number
+		: number;
+
 	const metadata = {
 		schemaName,
 		type: "integer",
@@ -47,10 +53,11 @@ function integerConstructor<
 			optional: (options?.optional ?? false) as Options extends { optional: true } ? true : false,
 			minValue: (options?.minValue ?? -2147483648) as Options extends { minValue: infer N extends number } ? N : -2147483648,
 			maxValue: (options?.maxValue ?? 2147483647) as Options extends { maxValue: infer N extends number } ? N : 2147483647,
+			converter: options?.converter ?? null,
 		} satisfies IntegerFieldOptions,
 	} satisfies IntegerFieldMetadata;
 
-	return coreTag<number>()(metadata);
+	return coreTag<TType>()(metadata);
 }
 
 export const integer = fieldType(integerConstructor, "integer", {

@@ -3,11 +3,21 @@ import { id } from "./Metadata/Id";
 import { odataConnector } from "./Connectors/OData";
 import { describe, expect, test } from "vitest";
 import { guid } from "./Metadata/Guid";
+import { Tag } from "./Helpers";
+
+type ReversedString = Tag<string, "variant", "Reversed">;
 
 const accountMetadata = entity("Account", {
     id: id("AccountId"),
     name: key("Name"),
-    accountNumber: string("AccountNumber", { maxLength: 20 }),
+    accountNumber: string("AccountNumber", { maxLength: 20, converter: {
+        convert(value: string) {
+            return value.split("").reverse().join("") as ReversedString;
+        },
+        revert(value: ReversedString) {
+            return value.split("").reverse().join("");
+        }
+    } }),
 });
 
 type AccountMetadata = typeof accountMetadata;
@@ -77,6 +87,7 @@ describe("Live Integration Tests", async () => {
     const accountId = "f9783d6f-c4f5-eb11-94ef-000d3a2bfe19" as AccountId;
     const account = await testApi.accounts.retrieve(accountId);
 
+    expect(account.accountNumber).toBe("2991000000");
     console.log(account);
 
     await testApi.accounts.retrieveMultiple()

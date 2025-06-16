@@ -7,6 +7,12 @@ import type { FieldType } from "./Derive";
 export interface FieldSetupOptions {
 	/** Whether the field is optional, i.e. if it allows null */
 	optional?: boolean,
+
+	/** optional converter added by user */
+	converter?: {
+		convert(value: unknown): unknown,
+		revert(value: unknown): unknown,
+	}
 }
 
 
@@ -37,11 +43,19 @@ export type CoreType<TFieldMetadata> = TFieldMetadata extends {	[coreTypeKey]: i
 
 
 /** The options that are applicable to all fields */
-export interface FieldOptions {
+export interface FieldOptions
+{
 	/** If the field is optional (i.e. if null is allowed) */
 	optional: boolean,
+	
 	/** The optional default value if the value is null and the field is not optional. If not given the system will throw, if given the default is used instead. */
 	defaultValue?: unknown
+	
+	/** optional converter added by user */
+	converter: null | {
+		convert(value: unknown): unknown,
+		revert(value: unknown): unknown,
+	}
 }
 
 export type TypeDescriptor = { 

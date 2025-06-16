@@ -41,15 +41,21 @@ export interface OptionSetFieldOptions<T = unknown>
 }
 
 export function optionSetConstructor<
-	TFieldSchemaName extends string,
-	TOptions extends OptionSetFieldSetupOptions<T>,
-	T = unknown,
+	const TFieldSchemaName extends string,
+	const TOptions extends OptionSetFieldSetupOptions<T>,
+	const T = unknown,
 >(
 	schemaName: TFieldSchemaName,
 	options?: TOptions,
 ) 
 {
 	type TEnumMetadata = TOptions extends { enumMetadata: infer TEnum } ? undefined extends TEnum ? EnumMetadata : TEnum : EnumMetadata;
+	type TEnumType = TEnumMetadata[typeof tags]["coreType"]
+	type TType = TOptions extends { converter: infer TUserConverter } 
+		? TUserConverter extends { convert(value: any): infer TUserValue }
+			? TUserValue
+			: TEnumType
+		: TEnumType;
 
 	const metadata = {
 		schemaName,
@@ -57,10 +63,11 @@ export function optionSetConstructor<
 		options: {
 			optional: (options?.optional ?? false) as TOptions extends { optional: true } ? true : false,
 			enumMetadata: options?.enumMetadata as TEnumMetadata,
+			converter: options?.converter ?? null,
 		} satisfies OptionSetFieldOptions,
 	} satisfies OptionSetFieldMetadata;
 
-	return coreTag<TEnumMetadata[typeof tags]["coreType"]>()(metadata);
+	return coreTag<TType>()(metadata);
 }
 
 const coreOptionSet = fieldType(optionSetConstructor, "optionSet", {});

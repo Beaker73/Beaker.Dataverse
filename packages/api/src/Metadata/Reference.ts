@@ -32,8 +32,8 @@ export interface ReferenceFieldOptions extends FieldOptions
 }
 
 export function referenceConstructor<
-	TFieldSchemaName extends string,
-	TOptions extends ReferenceFieldSetupOptions,
+	const TFieldSchemaName extends string,
+	const TOptions extends ReferenceFieldSetupOptions,
 >(
 	schemaName: TFieldSchemaName,
 	options?: TOptions,
@@ -41,6 +41,11 @@ export function referenceConstructor<
 {
 	type Target = TOptions["targetSchemaName"] extends string ? TOptions["targetSchemaName"] : never;
 	type Reference = EntityReference<Target>;
+	type TType = TOptions extends { converter: infer TUserConverter } 
+		? TUserConverter extends { convert(value: any): infer TUserValue }
+			? TUserValue
+			: Reference
+		: Reference;
 
 	const metadata = {
 		schemaName,
@@ -49,10 +54,11 @@ export function referenceConstructor<
 			optional: (options?.optional ?? false) as TOptions extends { optional: true } ? true : false,
 			targetSchemaName: options?.targetSchemaName as Target,
 			customNavigationName: options?.customNavigationName ?? options?.schemaNameAsNavigationName ?? false,
+			converter: options?.converter ?? null,
 		} satisfies ReferenceFieldOptions,
 	} satisfies ReferenceFieldMetadata;
 
-	return coreTag<Reference>()(metadata);
+	return coreTag<TType>()(metadata);
 }
 
 const coreReference = fieldType(referenceConstructor, "reference", {});

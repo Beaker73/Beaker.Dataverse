@@ -50,6 +50,12 @@ function stringConstructor<
 	options?: TOptions,
 )
 {
+	type TType = TOptions extends { converter: infer TUserConverter } 
+		? TUserConverter extends { convert(value: any): infer TUserValue }
+			? TUserValue
+			: TSubType
+		: TSubType;
+		
 	const metadata = {
 		schemaName,
 		type: "string",
@@ -58,10 +64,11 @@ function stringConstructor<
 			maxLength: (options?.maxLength ?? 100) as TOptions extends { maxLength: infer N extends number } ? N : 100,
 			format: (options?.format ?? "plain") as TOptions extends { format: infer TFormat extends StringFormat } ? (TFormat extends undefined ? "plain" : TFormat) : StringFormat,
 			key: (options?.key ?? false) as TOptions extends { key: true } ? true : false,
+			converter: options?.converter ?? null,
 		} satisfies StringFieldOptions,
 	} satisfies StringFieldMetadata;
 
-	return coreTag<TSubType>()(metadata);
+	return coreTag<TType>()(metadata);
 }
 
 export const string = fieldType(stringConstructor, "string", {

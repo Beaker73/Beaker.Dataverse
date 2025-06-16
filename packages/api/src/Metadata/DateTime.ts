@@ -32,18 +32,25 @@ export interface DateTimeFieldOptions extends FieldOptions
  * @returns The metadata representing the date-time field
  */
 function dateTimeConstructor<
-	TSchemaName extends string,
-	TOptions extends DateTimeFieldSetupOptions
+	const TSchemaName extends string,
+	const TOptions extends DateTimeFieldSetupOptions
 >(
 	schemaName: TSchemaName,
 	options?: TOptions,
 )
 {
-	return coreTag<ZonedDateTime>()({
+	type TType = TOptions extends { converter: infer TUserConverter } 
+		? TUserConverter extends { convert(value: any): infer TUserValue }
+			? TUserValue
+			: ZonedDateTime
+		: ZonedDateTime;
+
+	return coreTag<TType>()({
 		schemaName,
 		type:"dateTime",
 		options: {
 			optional: (options?.optional ?? false) as TOptions extends { optional: true } ? true : false,
+			converter: options?.converter ?? null,
 		} satisfies DateTimeFieldOptions,
 	} satisfies DateTimeFieldMetadata);
 }
