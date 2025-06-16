@@ -74,6 +74,10 @@ export function api<TOptions extends ApiOptions>(options: TOptions)
                     requireData?: TRequireData,
                     /** Limit to the top n number of rows */
                     top?: number,
+                    /** Abort signal to abort the fetch early if needed */
+                    abortSignal?: AbortSignal,
+                    /** The page size per page fetched (default 100) */
+                    pageSize?: number,
                 },
             ) => baseApi.retrieveMultiple<TMetadata, TSchemaName, TEntity, TExpectSingle, TRequireData>(metadata, options),
             execute: (entity: TEntity, action: Omit<DataverseAction, "boundTo">) => baseApi.execute({ ...action, boundTo: entity }),

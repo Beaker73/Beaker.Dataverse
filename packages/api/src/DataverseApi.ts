@@ -169,6 +169,10 @@ export function dataverseApi(connector: ApiConnector)
 			requireData?: TRequireData,
 			/** Limit to the top n number of rows */
 			top?: number,
+			/** Abort signal to abort the fetch early if needed */
+			abortSignal?: AbortSignal,
+			/** The page size per page fetched (default 100) */
+			pageSize?: number,
 		},
 	):
 		Promise<TExpectSingle extends true ? (TRequireData extends true ? T : T | undefined) : T[]>
@@ -191,6 +195,9 @@ export function dataverseApi(connector: ApiConnector)
 			fields: Object.values(metadata.fields).map(f => f.schemaName.toLowerCase()),
 			filter: opt.query ? queryToFilter<TMetadata, TSchemaName>(metadata, opt.query) : undefined,
 			top: opt.top,
+		}, {
+			abortSignal: opt.abortSignal,
+			pageSize: opt.pageSize,
 		});
 
 		if (result.length == 0 && opt?.requireData === true)

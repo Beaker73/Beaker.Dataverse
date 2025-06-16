@@ -24,6 +24,10 @@ export type TypedApi<
             requireData?: TRequireData,
             /** Limit to the top n number of rows */
             top?: number,
+            /** Abort signal to abort the fetch early if needed */
+            abortSignal?: AbortSignal,
+            /** The page size per fetched page */
+            pageSize?: number,
         },
     ): Promise<TExpectSingle extends true ? TEntity : TEntity[]>,
 };

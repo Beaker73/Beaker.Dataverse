@@ -169,7 +169,7 @@ export async function odataConnector(url: URL, options?: { baseUrl?: string, tok
 		return entityData(entityName, raw);
 	}
 
-	async function retrieveMultiple(query: Query): Promise<EntityData[]> {
+	async function retrieveMultiple(query: Query, options?: { abortSignal?: AbortSignal, pageSize?: number }): Promise<EntityData[]> {
 		const entity = metadata(query.schemaName);
 		const [filterString, args, { alwaysEmpty }] = query.filter ? stringifyFilter(entity, query.filter) : [undefined, [], { alwaysEmpty: false }];
 
@@ -191,9 +191,32 @@ export async function odataConnector(url: URL, options?: { baseUrl?: string, tok
 		}
 
 		const queryArgs = args.join("&");
+		const pageSize = options?.pageSize ?? 100;
+		const mappedEntities: EntityData[] = [];
 
-		const result = await get<{ value: Record<string, unknown>[] }>(`${entitySetName(query.schemaName)}?${queryArgs}`);
-		return result.value.map(raw => entityData(query.schemaName, raw));
+		console.log("pageSize", pageSize);
+		let url: string | null = `${entitySetName(query.schemaName)}?${queryArgs}`;
+		do {
+			// when abort, do not fetch more pages
+			if(options?.abortSignal?.aborted)
+				return [];
+
+			// fetch the next page
+			const result: QueryPage = await get<QueryPage>(url, {
+				Prefer: `odata.maxpagesize=${pageSize}`,
+			});
+
+			// convert the raw data to entity data
+			mappedEntities.push(...result.value.map(raw => entityData(query.schemaName, raw)));
+
+			// get the next ling, if available
+			url = result["@odata.nextLink"] ?? null;
+		}
+		while(url);
+
+		return mappedEntities;
+
+		type QueryPage = { "@odata.nextLink": string, value: Record<string, unknown>[] };
 	}
 
 	async function create(entityName: string, data: EntityData): Promise<Guid> {

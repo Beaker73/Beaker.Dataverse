@@ -8,10 +8,16 @@ export interface ApiRetrieveOptions {
 	includeNamesOfReferences?: boolean,
 }
 
-export interface ApiConnector
-{
-	retrieve(entityName: string, id: Guid, options?: ApiRetrieveOptions ): Promise<EntityData>;
-	retrieveMultiple(query: Query): Promise<EntityData[]>;
+export interface ApiRetriveMultipleOptions {
+	/** Abort signal to abort the fetch early if needed */
+	abortSignal?: AbortSignal,
+	/** The page size per page fetched (default 100) */
+	pageSize?: number,
+}
+
+export interface ApiConnector {
+	retrieve(entityName: string, id: Guid, options?: ApiRetrieveOptions): Promise<EntityData>;
+	retrieveMultiple(query: Query, options?: ApiRetriveMultipleOptions): Promise<EntityData[]>;
 	create(schemaName: string, data: EntityData): Promise<Guid>;
 	update(schemaName: string, id: Guid, data: EntityData): Promise<unknown>;
 	remove(schemaName: string, id: Guid): Promise<void>;
@@ -21,20 +27,19 @@ export interface ApiConnector
 
 	whoAmI(): Promise<WhoAmIResponse>;
 	retrieveOptionSetValues(entitySchemaName: string, fieldSchemaName: string): Promise<Record<number, string>>
-	
+
 	getSetName(entityName: string): string | undefined;
 	getNavPropName(entityName: string, fieldName: string, targetEntity: string): Promise<string | undefined>;
 }
 
-export type DataverseAction<T extends object = object> = T & { 
+export type DataverseAction<T extends object = object> = T & {
 	boundTo?: EntityReference | Entity,
 	name: string,
 	parameters: Record<string, unknown>,
 	onSuccess: (result: unknown) => unknown,
 };
 
-export interface WhoAmIResponse
-{
+export interface WhoAmIResponse {
 	OrganizationId: Guid,
 	BusinessUnitId: Guid,
 	UserId: Guid,

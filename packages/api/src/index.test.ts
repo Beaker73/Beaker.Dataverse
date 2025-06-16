@@ -113,6 +113,15 @@ describe("Live Integration Tests", async () => {
             expect(result.length).toBeGreaterThan(0);
         });
 
+         test("test paging", async () => {
+
+            const accounts = await testApi.accounts.retrieveMultiple({
+                pageSize: 10,
+            });
+
+            expect(accounts.length).toBe(66);
+        });
+
         test("Retrieve Acount", async () => {
             const accountId = "f9783d6f-c4f5-eb11-94ef-000d3a2bfe19" as AccountId;
             const account = await testApi.accounts.retrieve(accountId);
