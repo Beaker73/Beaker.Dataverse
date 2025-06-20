@@ -5,6 +5,7 @@ import type { EntityMatch } from "./Match";
 import { isAndExpression, isOrExpression } from "./Match";
 import type { NestedAndQuery, NestedOrQuery, Query } from "./Query";
 import { Operator } from "./Query";
+import { logicalName } from "../Helpers";
 
 /**
  * Converts a entity match to a full blown query
@@ -78,7 +79,7 @@ export function queryToFilter<
 
 			const field = metadata.fields[fieldQuery.field];
 			filter.operations.push({
-				fieldName: field.schemaName.toLowerCase(),
+				fieldName: logicalName(field),
 				operator: operator(qop),
 				value: qop === Operator.Null || qop === Operator.NotNull ? null
 					: "value" in fieldQuery ? convertFieldToServer(field, fieldQuery.value) : undefined,

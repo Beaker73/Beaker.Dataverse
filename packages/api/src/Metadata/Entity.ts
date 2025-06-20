@@ -1,15 +1,6 @@
 import type { GetTag, Guid, HasTag, Merge, Tag } from "../Helpers";
+import { logicalName as getLogicalName } from "../Helpers";
 import type { FieldMetadata } from ".";
-
-export type LogicalName = Tag<string, "type", "LogicalName">;
-/**
- * Generates a logical name from a schema name
- * @param name The schema name to convert to a logical name
- * @returns The logical name
- */
-export function logicalName(name: string): LogicalName {
-	return name.toLowerCase() as LogicalName;
-}
 
 /** Metadata to represent an entity in DataVerse */
 export interface EntityMetadata<
@@ -43,7 +34,7 @@ export function metadata<TSchemaName extends string>(schemaName: TSchemaName) {
 export function findMetadataByLogicalName(logicalName: string) {
 	return Object
 		.values(knownEntityMetadata)
-		.find(e => e.schemaName.toLowerCase() === logicalName);
+		.find(e => getLogicalName(e) === logicalName);
 }
 
 export interface EntityOptions {

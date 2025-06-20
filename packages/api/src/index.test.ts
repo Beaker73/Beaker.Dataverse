@@ -119,7 +119,7 @@ describe("Live Integration Tests", async () => {
                 pageSize: 10,
             });
 
-            expect(accounts.length).toBe(66);
+            expect(accounts.length).toBe(67);
         });
 
         test("Retrieve Acount", async () => {

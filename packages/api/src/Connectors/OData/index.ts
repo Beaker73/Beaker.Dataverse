@@ -1,4 +1,4 @@
-import { emptyArray } from "../../Helpers";
+import { emptyArray, logicalName, SchemaName, schemaName } from "../../Helpers";
 import type { Guid } from "../../Helpers/Types";
 import { parseGuid, tryParseGuid } from "../../Helpers/Types";
 import type { Entity, EntityMetadata } from "../../Metadata";
@@ -65,12 +65,12 @@ export async function odataConnector(url: URL, options?: { baseUrl?: string, tok
 
 
 	// fetch metadata needed for odata queries. SetNames for OData queries differ from their SchemaNames
-	let entitySetName: (entitySetName: string) => string | undefined;
+	let entitySetName: (entitySetName: SchemaName) => string | undefined;
 	if (!isPortal) {
 		const _result = await get<EntityDefinitionResponse>("EntityDefinitions?$select=SchemaName,EntitySetName");
 
 		/** Contains the mapping from schemaName to entitySetName for odata queries */
-		const entitySetMapping: Record<string, string> = Object.fromEntries(_result.value.map(d => [d.SchemaName, d.EntitySetName]));
+		const entitySetMapping: Record<SchemaName, string> = Object.fromEntries(_result.value.map(d => [d.SchemaName, d.EntitySetName]));
 		entitySetName = (entityName: string) => {
 			if (!entityName)
 				return undefined;
@@ -88,7 +88,7 @@ export async function odataConnector(url: URL, options?: { baseUrl?: string, tok
 	}
 	else {
 		// portal does not provide metadata, so we 'create' it ourselves
-		entitySetName = (entityName: string) => `${entityName}s`; // pluralize the name (todo, handle ies and such)
+		entitySetName = (entityName: SchemaName) => `${entityName}s`; // pluralize the name (todo, handle ies and such)
 	}
 
 	return {
@@ -116,7 +116,7 @@ export async function odataConnector(url: URL, options?: { baseUrl?: string, tok
 	 * @param raw The raw data, with the _value fields for references
 	 * @returns Slightly typed entity data
 	 */
-	function entityData(schemaName: string, raw: Record<string, unknown>): EntityData {
+	function entityData(schemaName: SchemaName, raw: Record<string, unknown>): EntityData {
 		const entity = metadata(schemaName);
 
 		return Object.fromEntries(
@@ -124,11 +124,11 @@ export async function odataConnector(url: URL, options?: { baseUrl?: string, tok
 				([key, value]) => {
 					if (key[0] === "_" && key.endsWith("_value")) {
 						const fieldName = key.slice(1, -6);
-						const field = Object.values(entity.fields).find(f => f.schemaName.toLowerCase() === fieldName);
+						const field = Object.values(entity.fields).find(f => logicalName(f) === fieldName);
 
 						if (field && field.type === "reference") {
 							if (typeof value === "string") {
-								const name = raw[`_${field?.schemaName.toLowerCase()}_value@OData.Community.Display.V1.FormattedValue`];
+								const name = raw[`_${logicalName(field)}_value@OData.Community.Display.V1.FormattedValue`];
 								if(name && typeof name === "string")
 									return [fieldName, { schemaName: fieldName, id: parseGuid(value), name }];
 								else
@@ -152,9 +152,9 @@ export async function odataConnector(url: URL, options?: { baseUrl?: string, tok
 		if (options?.fields) {
 			const entity = metadata(entityName);
 			args.push(`$select=${options.fields.map(fieldName => {
-				const field = Object.values(entity.fields).find(f => f.schemaName.toLowerCase() === fieldName);
+				const field = Object.values(entity.fields).find(f => logicalName(f) === fieldName);
 				if (field?.type === "reference")
-					return `_${field?.schemaName.toLowerCase()}_value`;
+					return `_${logicalName(field)}_value`;
 				return fieldName;
 			}).join(",")}`);
 		}
@@ -170,7 +170,7 @@ export async function odataConnector(url: URL, options?: { baseUrl?: string, tok
 	}
 
 	async function retrieveMultiple(query: Query, options?: { abortSignal?: AbortSignal, pageSize?: number }): Promise<EntityData[]> {
-		const entity = metadata(query.schemaName);
+		const entity = metadata(schemaName(query));
 		const [filterString, args, { alwaysEmpty }] = query.filter ? stringifyFilter(entity, query.filter) : [undefined, [], { alwaysEmpty: false }];
 
 		if (alwaysEmpty)
@@ -183,9 +183,9 @@ export async function odataConnector(url: URL, options?: { baseUrl?: string, tok
 
 		if (query.fields) {
 			args.push(`$select=${query.fields.map(fieldName => {
-				const field = Object.values(entity.fields).find(f => f.schemaName.toLowerCase() === fieldName);
+				const field = Object.values(entity.fields).find(f => logicalName(f) === fieldName);
 				if (field?.type === "reference")
-					return `_${field?.schemaName.toLowerCase()}_value`;
+					return `_${logicalName(field?.schemaName)}_value`;
 				return fieldName;
 			}).join(",")}`);
 		}
@@ -195,7 +195,7 @@ export async function odataConnector(url: URL, options?: { baseUrl?: string, tok
 		const mappedEntities: EntityData[] = [];
 
 		console.log("pageSize", pageSize);
-		let url: string | null = `${entitySetName(query.schemaName)}?${queryArgs}`;
+		let url: string | null = `${entitySetName(schemaName(query))}?${queryArgs}`;
 		do {
 			// when abort, do not fetch more pages
 			if(options?.abortSignal?.aborted)
@@ -207,7 +207,7 @@ export async function odataConnector(url: URL, options?: { baseUrl?: string, tok
 			});
 
 			// convert the raw data to entity data
-			mappedEntities.push(...result.value.map(raw => entityData(query.schemaName, raw)));
+			mappedEntities.push(...result.value.map(raw => entityData(schemaName(query), raw)));
 
 			// get the next ling, if available
 			url = result["@odata.nextLink"] ?? null;
@@ -233,25 +233,25 @@ export async function odataConnector(url: URL, options?: { baseUrl?: string, tok
 		const entity = metadata(entityName);
 		const refFields = Object
 			.values(entity.fields)
-			.filter(f => f.type === "reference" && f.schemaName.toLowerCase() in data); // only process references that are in the data
+			.filter(f => f.type === "reference" && logicalName(f) in data); // only process references that are in the data
 
 		for (const f of refFields) {
 			if (f.type !== "reference")
 				return; // just for typescript, we know this is a reference
 
 			// only process references that are not null
-			const value = data[f.schemaName.toLowerCase()];
+			const value = data[logicalName(f)];
 
 			// get nav property name
-			let navName = await getNavPropName(entityName, f.schemaName, f.options.targetSchemaName);
+			let navName = await getNavPropName(entityName, schemaName(f), f.options.targetSchemaName);
 			if (!navName) {
 
 				// if official name is not found, use the old way of getting the name
 				// default to logical name
-				navName = f.schemaName.toLowerCase();
+				navName = logicalName(f);
 
 				if (f.options.customNavigationName === true)
-					navName = f.schemaName;
+					navName = schemaName(f);
 				else if (typeof f.options.customNavigationName === "string")
 					navName = f.options.customNavigationName;
 			}
@@ -262,7 +262,7 @@ export async function odataConnector(url: URL, options?: { baseUrl?: string, tok
 			if (typeof value === "object" && value !== null && "id" in value && typeof value.id === "string")
 				newValue = `/${entitySetName(f.options.targetSchemaName)}(${value.id})`;
 
-			delete data[f.schemaName.toLowerCase()]; // remove the old value
+			delete data[logicalName(f)]; // remove the old value
 			data[newKey] = newValue; // add the new value
 		}
 	}
@@ -288,7 +288,7 @@ export async function odataConnector(url: URL, options?: { baseUrl?: string, tok
 				// entity, get metadata and use it to get the schemaName
 				const metadata = getMetadata(action.boundTo);
 				if (metadata)
-					parts.push(`${entitySetName(metadata.schemaName)}(${action.boundTo.id})`);
+					parts.push(`${entitySetName(schemaName(metadata))}(${action.boundTo.id})`);
 			}
 		}
 
@@ -313,8 +313,8 @@ export async function odataConnector(url: URL, options?: { baseUrl?: string, tok
 				const metadata = getMetadata(value as unknown as Entity);
 				if (metadata)
 					return JSON.stringify({
-						[metadata.fields["id"].schemaName.toLowerCase()]: value.id,
-						"@odata.type": `Microsoft.Dynamics.CRM.${metadata.schemaName}`,
+						[logicalName(metadata.fields["id"])]: value.id,
+						"@odata.type": `Microsoft.Dynamics.CRM.${schemaName(metadata)}`,
 					});
 			}
 
@@ -345,7 +345,7 @@ export async function odataConnector(url: URL, options?: { baseUrl?: string, tok
 	async function retrieveOptionSetValues(entitySchemaName: string, fieldSchemaName: string): Promise<Record<number, string>> {
 		const returnValue: Record<number, string> = {};
 
-		const url = `EntityDefinitions(LogicalName='${entitySchemaName.toLowerCase()}')/Attributes(LogicalName='${fieldSchemaName.toLocaleLowerCase()}')/Microsoft.Dynamics.CRM.PicklistAttributeMetadata?$select=LogicalName&$expand=OptionSet,GlobalOptionSet`;
+		const url = `EntityDefinitions(LogicalName='${logicalName(entitySchemaName)}')/Attributes(LogicalName='${logicalName(fieldSchemaName)}')/Microsoft.Dynamics.CRM.PicklistAttributeMetadata?$select=LogicalName&$expand=OptionSet,GlobalOptionSet`;
 		const data = await get<OptionSetData>(url);
 
 		const options = data.OptionSet ? data.OptionSet.Options : (data.GlobalOptionSet ? data.GlobalOptionSet.Options : []);
@@ -384,7 +384,7 @@ function stringifyFilter(entity: EntityMetadata, query: QueryFilter): [string | 
 	const flags = { alwaysEmpty: false };
 
 	const ops = query.operations.map(operation => {
-		const field = Object.values(entity.fields).find(f => f.schemaName.toLowerCase() === operation.fieldName);
+		const field = Object.values(entity.fields).find(f => logicalName(f) === operation.fieldName);
 
 		if (operation.operator === "in" && Array.isArray(operation.value)) {
 			argIndex += 2;

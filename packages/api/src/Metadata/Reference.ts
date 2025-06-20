@@ -1,4 +1,4 @@
-import { hasValue, type Guid } from "../Helpers";
+import { hasValue, schemaName, type Guid } from "../Helpers";
 import type { EntityReference } from "../Types/ConnectorTypes";
 
 import type { EntityMetadata } from "./Entity";
@@ -107,7 +107,7 @@ export function entityReference<
 		return null as EntityReferenceReturn<TMetadata, TId>;
 
 	return {
-		schemaName: metadata.schemaName as TMetadata["schemaName"],
+		schemaName: schemaName(metadata) as TMetadata["schemaName"],
 		id,
 	} satisfies EntityReference<TMetadata["schemaName"]> as unknown as EntityReferenceReturn<TMetadata, TId>;
 }

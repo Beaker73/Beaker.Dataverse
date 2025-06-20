@@ -1,5 +1,5 @@
 import { abandonEntity, getMetadata, getTrackingData, mapEntity } from "./EntityMapper";
-import { debugThrow, Guid } from "./Helpers";
+import { debugThrow, Guid, logicalName, LogicalName, schemaName } from "./Helpers";
 import { Entity, EntityMetadata, BaseTypeFromMetadata } from "./Metadata";
 import { matchToQuery, queryToFilter } from "./Queries/Conversion";
 import { EntityMatch } from "./Queries/Match";
@@ -44,7 +44,7 @@ export function dataverseApi(connector: ApiConnector)
 
 		const entityData = tracking.changes;
 		const metadata = getMetadata(entity)!; // we already know there is tracking data, so metadata should be present
-		const id = await connector.create(metadata.schemaName, entityData);
+		const id = await connector.create(schemaName(metadata), entityData);
 
 		abandonEntity(entity);
 		return id as TEntity["id"];
@@ -69,7 +69,7 @@ export function dataverseApi(connector: ApiConnector)
 
 		// send update to connector
 		const metadata = getMetadata(entity)!; // we already know there is tracking data, so metadata should be present
-		await connector.update(metadata.schemaName, entity.id, tracking.changes);
+		await connector.update(schemaName(metadata), entity.id, tracking.changes);
 		abandonEntity(entity);
 	}
 
@@ -118,7 +118,7 @@ export function dataverseApi(connector: ApiConnector)
 		id: Guid<TMetadata["schemaName"]>,
 	): Promise<void>
 	{
-		return connector.remove(metadata.schemaName, id);
+		return connector.remove(schemaName(metadata), id);
 	}
 
 	/**
@@ -136,8 +136,8 @@ export function dataverseApi(connector: ApiConnector)
 	{
 		const { includeNamesOfReferences = false } = options ?? {};
 
-		const unmapped = await connector.retrieve(metadata.schemaName, id, {
-			fields: Object.values(metadata.fields).map(f => f.schemaName.toLowerCase()),
+		const unmapped = await connector.retrieve(schemaName(metadata), id, {
+			fields: Object.values(metadata.fields).map(f => logicalName(f)),
 			includeNamesOfReferences,
 		});
 
@@ -191,8 +191,8 @@ export function dataverseApi(connector: ApiConnector)
 		}
 
 		const result = await connector.retrieveMultiple({
-			schemaName: metadata.schemaName,
-			fields: Object.values(metadata.fields).map(f => f.schemaName.toLowerCase()),
+			schemaName: schemaName(metadata),
+			fields: Object.values(metadata.fields).map(f => logicalName(f)),
 			filter: opt.query ? queryToFilter<TMetadata, TSchemaName>(metadata, opt.query) : undefined,
 			top: opt.top,
 		}, {
@@ -201,9 +201,9 @@ export function dataverseApi(connector: ApiConnector)
 		});
 
 		if (result.length == 0 && opt?.requireData === true)
-			throw new Error(`No data found for query against ${metadata.schemaName}`);
+			throw new Error(`No data found for query against ${schemaName(metadata)}`);
 		if (result.length > 1 && opt?.expectSingle === true)
-			throw new Error(`Expected single result for query against ${metadata.schemaName}, but found ${result.length} records`);
+			throw new Error(`Expected single result for query against ${schemaName(metadata)}, but found ${result.length} records`);
 
 		const mapped = result.map(r => odataMapEntity(metadata, r));
 
@@ -222,22 +222,22 @@ export function dataverseApi(connector: ApiConnector)
 	/// TODO: somehow make the Type automaticly derive from the metadata. Lost 4 hours during first try. Maybe future insight will help.
 	async function getOptionSetValues<TType extends string | number>(metadata: EntityMetadata, field: string)
 	{
-		const result = await connector.retrieveOptionSetValues(metadata.schemaName, metadata.fields[field].schemaName);
+		const result = await connector.retrieveOptionSetValues(schemaName(metadata), metadata.fields[field].schemaName);
 		return result as Record<TType, string>;
 	}
 
 	async function fetch<TMetadata extends EntityMetadata>(metadata: TMetadata, fetchXml: string)
 	{
-		return await connector.fetch(metadata.schemaName, fetchXml);
+		return await connector.fetch(schemaName(metadata), fetchXml);
 	}
 
 	/// TODO: somehow make the Type automaticly derive from the metadata. Lost 4 hours during first try. Maybe future insight will help.
 	async function downloadImage<TMetadata extends EntityMetadata>(metadata: TMetadata, id: Guid<TMetadata["schemaName"]>, field: string)
 	{
-		return await connector.downloadImage(metadata.schemaName, id, field);
+		return await connector.downloadImage(schemaName(metadata), id, field);
 	}
 
-	function getODataSetName(logicalName: string): string | undefined
+	function getODataSetName(logicalName: LogicalName): string | undefined
 	{
 		return connector.getSetName(logicalName);
 	}
@@ -251,13 +251,13 @@ function odataMapEntity<TMetadata extends EntityMetadata>(metadata: TMetadata, u
 		.filter(f => f.type === "reference")
 		.forEach(f => 
 		{
-			const to = f.schemaName.toLowerCase();
+			const to = logicalName(f);
 			const from = `_${to}_value`;
 
 			if (from in unmapped)
 			{
-				unmapped[f.schemaName.toLowerCase()] = unmapped[`_${f.schemaName.toLowerCase()}_value`];
-				delete unmapped[`_${f.schemaName.toLowerCase()}_value`];
+				unmapped[logicalName(f)] = unmapped[`_${logicalName(f)}_value`];
+				delete unmapped[`_${logicalName(f)}_value`];
 			}
 		});
 

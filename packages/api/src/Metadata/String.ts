@@ -1,4 +1,4 @@
-import type { Issue } from "../Helpers";
+import { schemaName, type Issue } from "../Helpers";
 import type { FieldMetadataBase, FieldOptions, FieldSetupOptions } from "./Field";
 import { coreTag, fieldType } from "./Field";
 
@@ -80,7 +80,7 @@ export const string = fieldType(stringConstructor, "string", {
 		function* validate(): Generator<Issue>
 		{
 			if (value.length > field.options.maxLength)
-				yield { level: "error", message: `The field '${field.schemaName}' with value '${value}' has a length of ${value.length} which is to long, the maximum length is ${field.options.maxLength}.` };
+				yield { level: "error", message: `The field '${schemaName(field)}' with value '${value}' has a length of ${value.length} which is to long, the maximum length is ${field.options.maxLength}.` };
 
 			switch (field.options.format)
 			{

@@ -1,5 +1,5 @@
-import { debugThrow, type Issue } from "./Helpers";
-import type { ClearTags, HasTag } from "./Helpers";
+import { debugThrow, logicalName as getLogicalName, schemaName } from "./Helpers";
+import type { ClearTags, HasTag, Issue } from "./Helpers";
 import { newGuid } from "./Helpers";
 import type { Entity, EntityMetadata, FieldMetadata, GetSchemaName } from "./Metadata";
 import { getTypeDescriptor } from "./Metadata";
@@ -68,20 +68,20 @@ export function newEntity<
 	for (const [key, field] of Object.entries(metadata.fields)) {
 		if (key in data) {
 			if (key in stateAndMutationFields)
-				console.warn(`Cannot set state or mutation fields on entity creation. Field ${field.schemaName} ignored.`);
+				console.warn(`Cannot set state or mutation fields on entity creation. Field ${schemaName(field)} ignored.`);
 			else
-				entityData[field.schemaName.toLowerCase()] = convertFieldToServer(field, data[key]);
+				entityData[getLogicalName(field)] = convertFieldToServer(field, data[key]);
 		}
 		else {
 			if (field.type === "id")
-				entityData[field.schemaName.toLowerCase()] = newGuid();
+				entityData[getLogicalName(field)] = newGuid();
 			else if (key in stateAndMutationFields) {
 				// not set, correct, ignore
 			}
 			else if (!field.options.optional && !field.options.readOnly)
 				debugThrow(new Error(`The field '${key}' is required but not provided`));
 			else
-				entityData[field.schemaName.toLowerCase()] = null;
+				entityData[getLogicalName(field)] = null;
 		}
 	}
 
@@ -134,19 +134,19 @@ export function mapEntity<
 			// validate before setting new value
 			if (typeof key === "string") {
 				if (metadata.isReadOnly) {
-					console.warn(`Write access detected to the readonly entity: ${metadata.schemaName}`);
+					console.warn(`Write access detected to the readonly entity: ${schemaName(metadata)}`);
 					return false;
 				}
 
 				const field = metadata.fields[key];
 				if (!field)
-					debugThrow(new Error(`The field ${key} is not a known field for the entity of type ${metadata.schemaName}`));
+					debugThrow(new Error(`The field ${key} is not a known field for the entity of type ${schemaName(metadata)}`));
 				if (field.options.readOnly) {
-					console.warn(`Write access detected to the readonly field: ${field.schemaName} on entity: ${metadata.schemaName}. Write ignored`);
+					console.warn(`Write access detected to the readonly field: ${schemaName(field)} on entity: ${schemaName(metadata)}. Write ignored`);
 					return false;
 				}
 
-				const logicalName = field.schemaName.toLowerCase();
+				const logicalName = getLogicalName(field);
 
 				// validation
 				const issues = validateField(field, value);
@@ -218,9 +218,9 @@ export function mapEntity<
 					return value;
 				}
 
-				if (field && !field.schemaName)
+				if (field && !schemaName(field))
 					debugThrow(new Error(`The field ${key} is missing a schema name`));
-				const logicalName = field.schemaName.toLowerCase();
+				const logicalName = getLogicalName(field);
 
 				if (logicalName in trackingData.changes)
 					value = trackingData.changes[logicalName];
@@ -252,7 +252,7 @@ export function mapEntity<
 			if (!field)
 				return undefined;
 
-			const logicalName = field.schemaName.toLowerCase();
+			const logicalName = getLogicalName(field);
 			return {
 				value: logicalName in trackingData.changes ? trackingData.changes[logicalName] : trackingData.original[logicalName],
 				writable: !metadata.isReadOnly,
