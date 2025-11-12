@@ -22,10 +22,12 @@ export async function odataConnector(url: URL, options?: { baseUrl?: string, tok
 		},
 	} satisfies RequestInit;
 
-	if (token)
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		(baseConfig.headers as any)["Authorization"] = token;
-
+	if (token) {
+		if (isPortal)
+			(baseConfig.headers as any)["__RequestVerificationToken"] = token;
+		else
+			(baseConfig.headers as any)["Authorization"] = token;
+	}
 	// GET request helper
 	async function get<T>(partialUrl: string, customHeaders?: Record<string, string>) {
 		const config = { ...baseConfig, method: "GET", headers: { ...baseConfig.headers, ...customHeaders } };

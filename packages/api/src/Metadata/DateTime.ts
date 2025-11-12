@@ -1,6 +1,4 @@
-import type { ZonedDateTime } from "@js-joda/core";
-import { Instant, ZoneId } from "@js-joda/core";
-import "@js-joda/timezone/dist/js-joda-timezone-10-year-range";
+import { formatISO, parseISO } from "date-fns";
 import type { FieldMetadataBase, FieldOptions, FieldSetupOptions } from "./Field";
 import { coreTag, fieldType } from "./Field";
 
@@ -42,8 +40,8 @@ function dateTimeConstructor<
 	type TType = TOptions extends { converter: infer TUserConverter } 
 		? TUserConverter extends { convert(value: any): infer TUserValue }
 			? TUserValue
-			: ZonedDateTime
-		: ZonedDateTime;
+			: Date
+		: Date;
 
 	return coreTag<TType>()({
 		schemaName,
@@ -55,11 +53,9 @@ function dateTimeConstructor<
 	} satisfies DateTimeFieldMetadata);
 }
 
-export const amsterdam = ZoneId.of("Europe/Amsterdam");
-
 export const dateTime = fieldType(dateTimeConstructor, "dateTime", {
 	convert: {
-		toClientModel: value => Instant.parse(`${value}`).atZone(amsterdam),
-		toServerModel: value => Instant.from(value).toJSON(),
+		toClientModel: value => typeof value === "string" ? parseISO(value) : (null as unknown as Date),
+		toServerModel: value => formatISO(value),
 	},
 });
