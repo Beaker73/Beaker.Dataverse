@@ -89,7 +89,7 @@ export async function odataConnector(url: URL, options?: { baseUrl?: string, tok
 	}
 	else {
 		// portal does not provide metadata, so we 'create' it ourselves
-		entitySetName = (entityName: string) => `${entityName}s`; // pluralize the name (todo, handle ies and such)
+		entitySetName = (entityName: string) => `${pluralize(entityName.toLowerCase())}`;
 	}
 
 	return {
@@ -422,6 +422,13 @@ function stringifyValue(value: unknown, quotedGuids = false): string {
 	return `${value}`;
 }
 
+function pluralize(name: string): string {
+	if (name.endsWith("y"))
+		return name.slice(0, -1) + "ies";
+	if(name.endsWith("s"))
+		return name + "es";
+	return name + "s";
+}
 
 
 
