@@ -130,11 +130,11 @@ export async function odataConnector(url: URL, options?: { baseUrl?: string, tok
 						if (field && field.type === "reference") {
 							if (typeof value === "string") {
 								const name = raw[`_${field?.schemaName.toLowerCase()}_value@OData.Community.Display.V1.FormattedValue`];
-								if(name && typeof name === "string")
+								if (name && typeof name === "string")
 									return [fieldName, { schemaName: fieldName, id: parseGuid(value), name }];
 								else
 									// if no name is provided, just return the id
-								return [fieldName, { schemaName: fieldName, id: parseGuid(value) }];
+									return [fieldName, { schemaName: fieldName, id: parseGuid(value) }];
 							}
 							if (value === null)
 								return [fieldName, null];
@@ -232,6 +232,11 @@ export async function odataConnector(url: URL, options?: { baseUrl?: string, tok
 					navName = f.schemaName;
 				else if (typeof f.options.customNavigationName === "string")
 					navName = f.options.customNavigationName;
+				else if (f.schemaName.toLowerCase() === "annotation" && f.schemaName.toLowerCase() === "objectid") {
+					// user did not provide a custom name, so now special case for annotation.objectid
+					navName = `objectid_${f.options.targetSchemaName.toLowerCase()}`;
+				}
+
 			}
 
 			const newKey = `${navName}@odata.bind`;
@@ -338,6 +343,12 @@ export async function odataConnector(url: URL, options?: { baseUrl?: string, tok
 
 
 	async function getNavPropName(entityName: string, fieldName: string, targetEntity: string): Promise<string | undefined> {
+
+		// if this is a portal, we cannot get any metadata.
+		// when returning undefined, the callee will have to guess the nav property name themselves
+		if (isPortal)
+			return undefined;
+
 		// check if value is in cache already
 		const key = `${entityName.toLowerCase()}.${fieldName.toLowerCase()}`;
 		if (key in navPropCache)
@@ -425,7 +436,7 @@ function stringifyValue(value: unknown, quotedGuids = false): string {
 function pluralize(name: string): string {
 	if (name.endsWith("y"))
 		return name.slice(0, -1) + "ies";
-	if(name.endsWith("s"))
+	if (name.endsWith("s"))
 		return name + "es";
 	return name + "s";
 }
