@@ -232,9 +232,14 @@ export async function odataConnector(url: URL, options?: { baseUrl?: string, tok
 					navName = f.schemaName;
 				else if (typeof f.options.customNavigationName === "string")
 					navName = f.options.customNavigationName;
-				else if (f.schemaName.toLowerCase() === "annotation" && f.schemaName.toLowerCase() === "objectid") {
+				else if (entityName.toLowerCase() === "annotation" && f.schemaName.toLowerCase() === "objectid") {
 					// user did not provide a custom name, so now special case for annotation.objectid
-					navName = `objectid_${f.options.targetSchemaName.toLowerCase()}`;
+					// we take the schema name NOT from target schema name, but from the value (as object id can point to anything)
+					if (typeof value === "object" && value !== null && "schemaName" in value && typeof value.schemaName === "string") {
+						navName = `objectid_${value.schemaName.toLowerCase()}`;
+					} else {
+						navName = `objectid_${f.options.targetSchemaName.toLowerCase()}`;
+					}
 				}
 
 			}
@@ -243,7 +248,7 @@ export async function odataConnector(url: URL, options?: { baseUrl?: string, tok
 			let newValue: string | null = null;
 
 			if (typeof value === "object" && value !== null && "id" in value && typeof value.id === "string")
-				newValue = `/${entitySetName(f.options.targetSchemaName)}(${value.id})`;
+				newValue = `/${entitySetName(entityName.toLowerCase() === "annotation" && f.schemaName.toLowerCase() === "objectid" ? value.schemaName : f.options.targetSchemaName)}(${value.id})`;
 
 			delete data[f.schemaName.toLowerCase()]; // remove the old value
 			data[newKey] = newValue; // add the new value

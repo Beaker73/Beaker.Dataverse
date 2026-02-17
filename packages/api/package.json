@@ -5,7 +5,7 @@
     "access": "public"
   },
   "description": "Beaker Dataverse API for Client apps",
-  "version": "0.1.22",
+  "version": "0.1.25",
   "type": "module",
   "files": [
     "dist"
@@ -15,7 +15,7 @@
   "types": "./dist/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Beaker73/Beaker.Dataverse/tree/master/packages/api"
+    "url": "git+https://github.com/Beaker73/Beaker.Dataverse.git#master"
   },
   "scripts": {
     "dev": "vite",
