@@ -1,6 +1,8 @@
-import { formatISO, parseISO } from "date-fns";
+import { parseISO } from "date-fns";
 import type { FieldMetadataBase, FieldOptions, FieldSetupOptions } from "./Field";
 import { coreTag, fieldType } from "./Field";
+import { formatInTimeZone } from "date-fns-tz";
+
 
 /** The options for setting up a date-time field */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
@@ -56,6 +58,6 @@ function dateTimeConstructor<
 export const dateTime = fieldType(dateTimeConstructor, "dateTime", {
 	convert: {
 		toClientModel: value => typeof value === "string" ? parseISO(value) : (null as unknown as Date),
-		toServerModel: value => formatISO(value),
+		toServerModel: value => formatInTimeZone(value, "UTC", "yyyy-MM-dd'T'HH:mm:ss'Z'"),
 	},
 });

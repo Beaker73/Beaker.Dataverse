@@ -14,8 +14,7 @@ type EntityState = "newUnsaved" | "unchanged" | "changed" | "markedForDeletion" 
 interface TrackingData<
 	TMetadata extends EntityMetadata<TSchemaName>,
 	TSchemaName extends string = TMetadata["schemaName"]
->
-{
+> {
 	metadata: TMetadata,
 	original: EntityData,
 	changes: EntityData,
@@ -55,21 +54,17 @@ export function newEntity<
 {
 	const data: Record<string, unknown> = initData?.[0] ?? {};
 	const entityData: EntityData = {};
-	for (const [key, field] of Object.entries(metadata.fields))
-	{
-		if (key in data) 
-		{
+	for (const [key, field] of Object.entries(metadata.fields)) {
+		if (key in data) {
 			if (key in stateAndMutationFields)
 				console.warn(`Cannot set state or mutation fields on entity creation. Field ${field.schemaName} ignored.`);
 			else
 				entityData[field.schemaName.toLowerCase()] = convertFieldToServer(field, data[key]);
 		}
-		else 
-		{
+		else {
 			if (field.type === "id")
 				entityData[field.schemaName.toLowerCase()] = newGuid();
-			else if (key in stateAndMutationFields)
-			{
+			else if (key in stateAndMutationFields) {
 				// not set, correct, ignore
 			}
 			else if (!field.options.optional)
@@ -106,8 +101,7 @@ export function mapEntity<
 >(
 	metadata: TMetadata,
 	entityData: EntityData,
-): TEntity
-{
+): TEntity {
 	const trackingData: TrackingData<TMetadata, TSchemaName> = {
 		metadata,
 		original: entityData,
@@ -122,16 +116,13 @@ export function mapEntity<
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- proxy is not used as a proxy but as a generic get/set interceptor
 	const proxy = new Proxy<any>(entityData, {
-		set(_obj, key, value) 
-		{
+		set(_obj, key, value) {
 			if (trackingData.state === "abandoned")
 				debugThrow(new Error("Cannot set values on an entity that has been abandoned"));
 
 			// validate before setting new value
-			if (typeof key === "string") 
-			{
-				if (metadata.isReadOnly) 
-				{
+			if (typeof key === "string") {
+				if (metadata.isReadOnly) {
 					console.warn(`Write access detected to the readonly entity: ${metadata.schemaName}`);
 					return false;
 				}
@@ -152,19 +143,17 @@ export function mapEntity<
 
 				// conversion
 				value = convertFieldToServer(field, value);
-				if(field.options.converter && field.options.converter.revert)
+				if (field.options.converter && field.options.converter.revert)
 					value = field.options.converter.revert(value);
 
 				// if new or changed, set value
-				if (!(logicalName in trackingData.original) || trackingData.original[logicalName] !== value) 
-				{
+				if (!(logicalName in trackingData.original) || trackingData.original[logicalName] !== value) {
 					trackingData.changes[logicalName] = value;
 					if (trackingData.state === "unchanged")
 						trackingData.state = "changed";
 				}
 				// if same value as original, remove from changes
-				else if (logicalName in trackingData.changes) 
-				{
+				else if (logicalName in trackingData.changes) {
 					delete trackingData.changes[logicalName];
 					if (trackingData.state === "changed" && Object.keys(trackingData.changes).length === 0)
 						trackingData.state = "unchanged";
@@ -175,19 +164,16 @@ export function mapEntity<
 
 			return false;
 		},
-		get(_obj, key) 
-		{
-			if (typeof key === "symbol")
-			{
+		get(_obj, key) {
+			if (typeof key === "symbol") {
 				if (key === trackingDataTag)
 					return trackingData;
 			}
-			else if (typeof key === "string" && key !== "constructor") 
-			{
+			else if (typeof key === "string" && key !== "constructor") {
 				// standard method for any object, call on original or all kinds of things start to break
-				if(key === "toString")
+				if (key === "toString")
 					return trackingData.original.toString();
-				if(key === "valueOf")
+				if (key === "valueOf")
 					return trackingData.original.valueOf();
 
 				if (trackingData.state === "abandoned")
@@ -208,31 +194,30 @@ export function mapEntity<
 				else if (logicalName in trackingData.original)
 					value = trackingData.original[logicalName];
 
-				value = convertFieldToClient(field, value ?? null);
-				if (field.options.converter && field.options.converter.convert)
-					value = field.options.converter.convert(value);
+				// only convert if the value was actually fetched from the server
+				if (value !== undefined) {
+					value = convertFieldToClient(field, value ?? null);
+					if (field.options.converter && field.options.converter.convert)
+						value = field.options.converter.convert(value);
+				}
 
 				return value;
 			}
 
 			return undefined;
 		},
-		ownKeys(_obj) 
-		{
+		ownKeys(_obj) {
 			return Object.keys(metadata.fields);
 		},
-		has(_obj, key) 
-		{
-			if (typeof key === "symbol")
-			{
+		has(_obj, key) {
+			if (typeof key === "symbol") {
 				if (key === trackingDataTag)
 					return true;
 			}
 
 			return key in metadata.fields;
 		},
-		getOwnPropertyDescriptor(_obj, key) 
-		{
+		getOwnPropertyDescriptor(_obj, key) {
 			const field = metadata.fields[key as string];
 			if (!field)
 				return undefined;
@@ -251,22 +236,18 @@ export function mapEntity<
 }
 
 
-export function validateField(field: FieldMetadata, value: unknown): Issue[]
-{
+export function validateField(field: FieldMetadata, value: unknown): Issue[] {
 	const descriptor = getTypeDescriptor(field.type);
 	if (!descriptor)
 		return [{ level: "error", message: `Unknown field type '${field.type}'` }];
 
 	const operations = descriptor.operations;
-	if ("validate" in operations && typeof operations.validate === "function")
-	{
-		if (value === null || value === undefined)
-		{
+	if ("validate" in operations && typeof operations.validate === "function") {
+		if (value === null || value === undefined) {
 			if (!field.options.optional)
 				return [{ level: "error", message: "value is required" }];
 		}
-		else
-		{
+		else {
 			return operations.validate(value, field);
 		}
 	}
@@ -274,15 +255,13 @@ export function validateField(field: FieldMetadata, value: unknown): Issue[]
 	return [];
 }
 
-export function truncateField(field: FieldMetadata, value: unknown): unknown
-{
+export function truncateField(field: FieldMetadata, value: unknown): unknown {
 	const descriptor = getTypeDescriptor(field.type);
 	if (!descriptor)
 		return value;
 
 	const operations = descriptor.operations;
-	if ("truncate" in operations && typeof operations.truncate === "function")
-	{
+	if ("truncate" in operations && typeof operations.truncate === "function") {
 		if (value !== null && value !== undefined)
 			return operations.truncate(value, field);
 	}
@@ -291,15 +270,13 @@ export function truncateField(field: FieldMetadata, value: unknown): unknown
 }
 
 
-export function convertFieldToServer(field: FieldMetadata, value: unknown): CoreServerType
-{
+export function convertFieldToServer(field: FieldMetadata, value: unknown): CoreServerType {
 	const descriptor = getTypeDescriptor(field.type);
 	if (!descriptor)
 		return value as CoreServerType;
 
 	const operations = descriptor.operations;
-	if ("convert" in operations)
-	{
+	if ("convert" in operations) {
 		if (value !== null && value !== undefined)
 			return operations.convert!.toServerModel(value, field);
 	}
@@ -307,15 +284,13 @@ export function convertFieldToServer(field: FieldMetadata, value: unknown): Core
 	return value as CoreServerType;
 }
 
-export function convertFieldToClient(field: FieldMetadata, value: CoreServerType): unknown
-{
+export function convertFieldToClient(field: FieldMetadata, value: CoreServerType): unknown {
 	const descriptor = getTypeDescriptor(field.type);
 	if (!descriptor)
 		return value;
 
 	const operations = descriptor.operations;
-	if ("convert" in operations)
-	{
+	if ("convert" in operations) {
 		if (value !== null && value !== undefined)
 			return operations.convert!.toClientModel(value, field);
 	}
@@ -333,8 +308,7 @@ export function getTrackingData<
 >(
 	entity: TEntity,
 )
-	: TrackingData<GetMetadata<TEntity>> | undefined
-{
+	: TrackingData<GetMetadata<TEntity>> | undefined {
 	if (!entity)
 		return undefined;
 	if (!(trackingDataTag in entity))
@@ -348,8 +322,7 @@ export function getTrackingData<
  * @param entity The entity to get the changes for
  * @returns The entity data of the changes, or undefined if the entity is not a tracked entity
  */
-export function getChanges<TEntity extends Entity>(entity: TEntity): EntityData | undefined
-{
+export function getChanges<TEntity extends Entity>(entity: TEntity): EntityData | undefined {
 	return getTrackingData(entity)?.changes;
 }
 
@@ -358,8 +331,7 @@ export function getChanges<TEntity extends Entity>(entity: TEntity): EntityData 
  * @param entity The entity to get the metadata for/from
  * @returns The metadata or undefined if the entity is not a tracked entity
  */
-export function getMetadata<TEntity extends Entity>(entity?: TEntity): GetMetadata<TEntity> | undefined
-{
+export function getMetadata<TEntity extends Entity>(entity?: TEntity): GetMetadata<TEntity> | undefined {
 	if (!entity)
 		return undefined;
 
@@ -371,8 +343,7 @@ export function getMetadata<TEntity extends Entity>(entity?: TEntity): GetMetada
  * @param entity The entity to check for changes
  * @returns true if the entity has changes, false otherwise
  */
-export function isDirty<TEntity extends Entity>(entity: TEntity): boolean
-{
+export function isDirty<TEntity extends Entity>(entity: TEntity): boolean {
 	const trackingData = getTrackingData(entity);
 	if (!trackingData)
 		return false;
@@ -385,8 +356,7 @@ export function isDirty<TEntity extends Entity>(entity: TEntity): boolean
  * @param entity The entity to mark for deletion
  * @throws Error if the entity is not tracked
  */
-export function markForDeletion<TEntity extends Entity>(entity: TEntity): void
-{
+export function markForDeletion<TEntity extends Entity>(entity: TEntity): void {
 	const trackingData = getTrackingData(entity);
 	if (!trackingData)
 		debugThrow(new Error("Cannot mark an entity for deletion that is not tracked"));
@@ -400,11 +370,9 @@ export function markForDeletion<TEntity extends Entity>(entity: TEntity): void
  * Collapses the 
  * @param entity The entity to collapse
  */
-export function collapseEntity<TEntity extends Entity>(entity: TEntity): void
-{
+export function collapseEntity<TEntity extends Entity>(entity: TEntity): void {
 	const trackingData = getTrackingData(entity);
-	if (trackingData) 
-	{
+	if (trackingData) {
 		if (trackingData.state === "markedForDeletion")
 			debugThrow(new Error("Cannot collapse an entity that is marked for deletion"));
 		if (trackingData.state === "abandoned")
@@ -416,11 +384,9 @@ export function collapseEntity<TEntity extends Entity>(entity: TEntity): void
 	}
 }
 
-export function abandonEntity<TEntity extends Entity>(entity: TEntity): void
-{
+export function abandonEntity<TEntity extends Entity>(entity: TEntity): void {
 	const trackingData = getTrackingData(entity);
-	if (trackingData) 
-	{
+	if (trackingData) {
 		if (trackingData.state === "abandoned")
 			console.warn("Detected duplicate abandon call on entity");
 
@@ -435,19 +401,15 @@ export function abandonEntity<TEntity extends Entity>(entity: TEntity): void
  * @param oldEntity The old entity that might have changes to re-apply on the new entity
  * @param newEntity The newly fetched entity to apply changes to
  */
-export function applyChanges<TEntity extends Entity>(oldEntity: TEntity, newEntity: TEntity): void 
-{
-	if (isDirty(oldEntity)) 
-	{
+export function applyChanges<TEntity extends Entity>(oldEntity: TEntity, newEntity: TEntity): void {
+	if (isDirty(oldEntity)) {
 		const oldTrackingData = getTrackingData(oldEntity);
 		const newTrackingData = getTrackingData(newEntity);
-		if (oldTrackingData && newTrackingData)
-		{
+		if (oldTrackingData && newTrackingData) {
 			if (oldTrackingData.state === "markedForDeletion")
 				newTrackingData.state = "markedForDeletion";
 
-			for (const [key, value] of Object.entries(oldTrackingData.changes)) 
-			{
+			for (const [key, value] of Object.entries(oldTrackingData.changes)) {
 				// if value of new entity differs from original value of the old entity
 				// then we have a conflict. Sorry, but server wins. So continue to next
 				//
@@ -470,8 +432,8 @@ type ToEntityResult<
 	TEntity extends Entity | undefined
 > = TEntity extends HasTag<"schameName">
 	? TEntity extends undefined
-		? EntityReference<GetSchemaName<NonNullable<TEntity>>> | undefined
-		: EntityReference<GetSchemaName<NonNullable<TEntity>>>
+	? EntityReference<GetSchemaName<NonNullable<TEntity>>> | undefined
+	: EntityReference<GetSchemaName<NonNullable<TEntity>>>
 	: never;
 
 /**
@@ -480,8 +442,7 @@ type ToEntityResult<
  * @returns Reference to the entity
  */
 export function toEntityReference<TEntity extends Entity | undefined>(entity: TEntity)
-	: ToEntityResult<TEntity>
-{
+	: ToEntityResult<TEntity> {
 	if (!entity)
 		return undefined as (ToEntityResult<TEntity>);
 

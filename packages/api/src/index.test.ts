@@ -67,6 +67,29 @@ describe("Live Integration Tests", async () => {
         }
     })
 
+    test("select specific columns only - retrieveMultiple", async () => {
+        const result = await testApi.accounts.retrieveMultiple({
+            select: ["id", "name"],
+            match: { name: "Baron Groente en Fruit" },
+            expectSingle: true,
+            requireData: true,
+        });
+
+        // result.accountNumber is not accessible due to typing removing the accountNumber property. 
+        // That is good during dev, but not for this test, so cast back to full Account type.
+        expect((result as Account).accountNumber).toBeUndefined();
+    });
+
+     test("select specific columns only - retrieve", async () => {
+        const result = await testApi.accounts.retrieve("4eb1374b-fecc-ef11-b8e8-7c1e524e81ed" as AccountId, {
+            select: ["id", "name"],
+        });
+
+        // result.accountNumber is not accessible due to typing removing the accountNumber property. 
+        // That is good during dev, but not for this test, so cast back to full Account type.
+        expect((result as Account).accountNumber).toBeUndefined();
+    });
+
 
     test("fetch linking entity with guids", async () => {
 

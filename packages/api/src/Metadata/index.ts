@@ -28,7 +28,13 @@ import type { OptionSetFieldMetadata } from "./OptionSet";
 import type { ReferenceFieldMetadata } from "./Reference";
 import type { StringFieldMetadata } from "./String";
 
-export type FieldMetadata =
+/// Type Extension Point
+/// Add: FieldTypes field of types with you extensions
+export interface Extensions
+{
+}
+
+export type CoreFieldMetadata =
 	| BooleanFieldMetadata
 	| DateTimeFieldMetadata
 	| FloatFieldMetadata
@@ -43,3 +49,8 @@ export type FieldMetadata =
 	| StringFieldMetadata
 	;
 
+export type FieldMetadata = 
+	Extensions extends { "customTypes": infer TCustomTypes } 
+		? CoreFieldMetadata | TCustomTypes 
+		: CoreFieldMetadata
+	;

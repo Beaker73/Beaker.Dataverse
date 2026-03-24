@@ -127,17 +127,24 @@ export function dataverseApi(connector: ApiConnector)
 	 * @param id The id of the entity to retrieve
 	 */
 	async function retrieve<
-		TMetadata extends EntityMetadata
+		TMetadata extends EntityMetadata,
+        TSelect extends readonly (keyof TMetadata["fields"])[] | undefined = undefined,
 	>(
 		metadata: TMetadata,
 		id: Guid<TMetadata["schemaName"]>,
-		options?: { includeNamesOfReferences?: boolean },
+		options?: { 
+			includeNamesOfReferences?: boolean,
+			/** Select specific columns only, instead of all of them */
+            select?: TSelect,
+		},
 	)
 	{
 		const { includeNamesOfReferences = false } = options ?? {};
 
 		const unmapped = await connector.retrieve(metadata.schemaName, id, {
-			fields: Object.values(metadata.fields).map(f => f.schemaName.toLowerCase()),
+			fields: Object.entries(metadata.fields)
+				.filter(([k, _]) => !options?.select || (options.select.includes(k)))
+				.map(([_, f]) => f.schemaName.toLowerCase()),
 			includeNamesOfReferences,
 		});
 
@@ -156,9 +163,12 @@ export function dataverseApi(connector: ApiConnector)
 		T = TypeFromMetadata<TMetadata>,
 		TExpectSingle extends boolean = false,
 		TRequireData extends boolean = false,
+        TSelect extends readonly (keyof TMetadata["fields"])[] | undefined = undefined,
 	>(
 		metadata: TMetadata,
 		options?: {
+			/** Select specific columns only, instead of all of them */
+            select?: TSelect,
 			/** Matches by example */
 			match?: NoInfer<Partial<EntityMatch<TMetadata, TSchemaName>>>,
 			/** Full Filtering Query */
@@ -188,7 +198,9 @@ export function dataverseApi(connector: ApiConnector)
 
 		const result = await connector.retrieveMultiple({
 			schemaName: metadata.schemaName,
-			fields: Object.values(metadata.fields).map(f => f.schemaName.toLowerCase()),
+			fields: Object.entries(metadata.fields)
+				.filter(([k, _]) => !opt.select || (opt.select.includes(k)))
+				.map(([_, f]) => f.schemaName.toLowerCase()),
 			filter: opt.query ? queryToFilter<TMetadata, TSchemaName>(metadata, opt.query) : undefined,
 			top: opt.top,
 		});
