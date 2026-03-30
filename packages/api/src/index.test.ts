@@ -5,6 +5,7 @@ import { describe, expect, test } from "vitest";
 import { guid } from "./Metadata/Guid";
 import { Tag } from "./Helpers";
 import { Operator } from "./Queries";
+import { date } from "./Metadata/Date";
 
 type ReversedString = Tag<string, "variant", "Reversed">;
 
@@ -19,6 +20,7 @@ const accountMetadata = entity("Account", {
             return value.split("").reverse().join("");
         }
     } }),
+    companyInfoLastChangeDate: date("wur_companyinfolastchangedate"),
     ...entityMutationFields(),
 });
 
@@ -69,7 +71,7 @@ describe("Live Integration Tests", async () => {
         }
     })
 
-    test("queryWithCompareDate", async () => {
+    test("queryWithCompareDateAndTime", async () => {
         const result = await testApi.accounts.retrieveMultiple({
             query: [
                 { field: "createdOn", operator: Operator.GreaterThan, value: new Date("2021-08-05T10:08:00+02:00") },
@@ -79,6 +81,29 @@ describe("Live Integration Tests", async () => {
         });
 
         expect(result?.accountNumber).toBe("2991000000");
+    })
+
+     test("queryWithCompareDateOnly", async () => {
+        const result = await testApi.accounts.retrieveMultiple({
+            query: [
+                { field: "companyInfoLastChangeDate", operator: Operator.GreaterThanOrEqual, value: new Date("2025-04-09") },
+                { field: "companyInfoLastChangeDate", operator: Operator.LessThan, value: new Date("2025-04-10") }
+            ],
+            expectSingle: true,
+        });
+
+        expect(result?.accountNumber).toBe("9107000000");
+    })
+
+      test("queryWithCompareDateOnlyUsingEquals", async () => {
+        const result = await testApi.accounts.retrieveMultiple({
+            query: [
+                { field: "companyInfoLastChangeDate", value: new Date("2025-04-09") },
+            ],
+            expectSingle: true,
+        });
+
+        expect(result?.accountNumber).toBe("9107000000");
     })
 
     test("select specific columns only - retrieveMultiple", async () => {
