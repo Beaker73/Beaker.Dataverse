@@ -12,14 +12,16 @@ type ReversedString = Tag<string, "variant", "Reversed">;
 const accountMetadata = entity("Account", {
     id: id("AccountId"),
     name: key("Name"),
-    accountNumber: string("AccountNumber", { maxLength: 20, converter: {
-        convert(value: string) {
-            return value.split("").reverse().join("") as ReversedString;
-        },
-        revert(value: ReversedString) {
-            return value.split("").reverse().join("");
+    accountNumber: string("AccountNumber", {
+        maxLength: 20, converter: {
+            convert(value: string) {
+                return value.split("").reverse().join("") as ReversedString;
+            },
+            revert(value: ReversedString) {
+                return value.split("").reverse().join("");
+            }
         }
-    } }),
+    }),
     companyInfoLastChangeDate: date("wur_companyinfolastchangedate"),
     ...entityMutationFields(),
 });
@@ -34,7 +36,7 @@ const teamRoleMetadata = entity("TeamRoles", {
     roleId: guid("RoleId", "Role"),
 });
 
-type TeamRoleMetadata  = typeof teamRoleMetadata;
+type TeamRoleMetadata = typeof teamRoleMetadata;
 type TeamRole = TypeFromMetadata<TeamRoleMetadata>;
 type TeamId = TeamRole["teamId"];
 
@@ -83,19 +85,20 @@ describe("Live Integration Tests", async () => {
         expect(result?.accountNumber).toBe("2991000000");
     })
 
-     test("queryWithCompareDateOnly", async () => {
+    test("queryWithCompareDateOnly", async () => {
         const result = await testApi.accounts.retrieveMultiple({
             query: [
-                { field: "companyInfoLastChangeDate", operator: Operator.GreaterThanOrEqual, value: new Date("2025-04-09") },
-                { field: "companyInfoLastChangeDate", operator: Operator.LessThan, value: new Date("2025-04-10") }
+                { field: "companyInfoLastChangeDate", operator: Operator.GreaterThanOrEqual, value: new Date("2025-04-09T00:00:00+02:00") },
+                { field: "companyInfoLastChangeDate", operator: Operator.LessThan, value: new Date("2025-04-10T00:00:00+02:00") }
             ],
             expectSingle: true,
         });
 
         expect(result?.accountNumber).toBe("9107000000");
+        expect(result?.companyInfoLastChangeDate).toEqual(new Date(2025, 3, 9));
     })
 
-      test("queryWithCompareDateOnlyUsingEquals", async () => {
+    test("queryWithCompareDateOnlyUsingEquals", async () => {
         const result = await testApi.accounts.retrieveMultiple({
             query: [
                 { field: "companyInfoLastChangeDate", value: new Date("2025-04-09") },
@@ -119,7 +122,7 @@ describe("Live Integration Tests", async () => {
         expect((result as Account).accountNumber).toBeUndefined();
     });
 
-     test("select specific columns only - retrieve", async () => {
+    test("select specific columns only - retrieve", async () => {
         const result = await testApi.accounts.retrieve("4eb1374b-fecc-ef11-b8e8-7c1e524e81ed" as AccountId, {
             select: ["id", "name"],
         });

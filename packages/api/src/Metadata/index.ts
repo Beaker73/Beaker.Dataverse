@@ -1,5 +1,6 @@
 export * from "../Api";
 export * from "./Boolean";
+export * from "./Date";
 export * from "./DateTime";
 export * from "./DefaultFields";
 export * from "./Derive";
@@ -16,7 +17,7 @@ export * from "./Reference";
 export * from "./String";
 
 import type { BooleanFieldMetadata } from "./Boolean";
-import { DateFieldMetadata } from "./Date";
+import type { DateFieldMetadata } from "./Date";
 import type { DateTimeFieldMetadata } from "./DateTime";
 import type { FloatFieldMetadata } from "./Float";
 import { GuidFieldMetadata } from "./Guid";

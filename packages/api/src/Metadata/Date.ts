@@ -1,3 +1,4 @@
+import { format, parse } from "date-fns";
 import { coreTag, FieldMetadataBase, FieldOptions, FieldSetupOptions, fieldType } from "./Field";
 
 export type DateFieldSetupOptions = FieldSetupOptions;
@@ -34,7 +35,7 @@ function dateConstructor<
 
 export const date = fieldType(dateConstructor, "date", {
 	convert: {
-		toClientModel: v => typeof v === "string" ? new Date(v) : new Date(),
-		toServerModel: v => v instanceof Date ? v.toISOString().split("T")[0] : null,
+		toClientModel: v => typeof v === "string" ? parse(v.substring(0,10), "yyyy-MM-dd", new Date()) : new Date(),
+		toServerModel: v => v instanceof Date ? format(v,"yyyy-MM-dd") : null,
 	},
 });
