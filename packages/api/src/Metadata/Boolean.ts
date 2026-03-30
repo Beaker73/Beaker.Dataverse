@@ -41,6 +41,7 @@ export function booleanConstructor<
 	const metadata = {
 		schemaName,
 		type: "boolean",
+		doNotQuoteInFilter: false, // only for string values, but boolean is not string, so false
 		options: {
 			optional: options?.optional ?? false,
 			defaultValue: false,

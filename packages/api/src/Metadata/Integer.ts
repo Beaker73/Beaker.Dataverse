@@ -49,6 +49,7 @@ function integerConstructor<
 	const metadata = {
 		schemaName,
 		type: "integer",
+		doNotQuoteInFilter: false, // only for string values, but integer is not string, so false
 		options: {
 			optional: (options?.optional ?? false) as Options extends { optional: true } ? true : false,
 			minValue: (options?.minValue ?? -2147483648) as Options extends { minValue: infer N extends number } ? N : -2147483648,

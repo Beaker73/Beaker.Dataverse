@@ -49,6 +49,7 @@ function floatConstructor<
 	const metadata = {
 		schemaName,
 		type: "float",
+		doNotQuoteInFilter: false, // only for string values, but float is not string, so false
 		options: {
 			optional: (options?.optional ?? false) as Options extends { optional: true } ? true : false,
 			minValue: (options?.minValue ?? -2147483648) as Options extends { minValue: infer N extends number } ? N : -2147483648,

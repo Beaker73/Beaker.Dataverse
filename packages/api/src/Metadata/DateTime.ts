@@ -48,6 +48,7 @@ function dateTimeConstructor<
 	return coreTag<TType>()({
 		schemaName,
 		type:"dateTime",
+		doNotQuoteInFilter: true, // dateTime values are serialized as string, but should not be quoted in filters
 		options: {
 			optional: (options?.optional ?? false) as TOptions extends { optional: true } ? true : false,
 			converter: options?.converter ?? null,

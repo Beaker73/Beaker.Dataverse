@@ -59,6 +59,7 @@ function stringConstructor<
 	const metadata = {
 		schemaName,
 		type: "string",
+		doNotQuoteInFilter: false, // this is a default string, so they should be quoted normally,
 		options: {
 			optional: (options?.optional ?? false) as TOptions extends { optional: true } ? true : false,
 			maxLength: (options?.maxLength ?? 100) as TOptions extends { maxLength: infer N extends number } ? N : 100,

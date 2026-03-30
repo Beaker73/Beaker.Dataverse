@@ -383,7 +383,7 @@ function stringifyFilter(entity: EntityMetadata, query: QueryFilter): [string | 
 		if (operation.operator === "in" && Array.isArray(operation.value)) {
 			argIndex += 2;
 			args.push(`@p${argIndex - 2}='${operation.fieldName}'`);
-			args.push(`@p${argIndex - 1}=[${operation.value.map((v: unknown) => stringifyValue(v, true)).join(",")}]`); // if guids, we DO need to quote. values are now JSON, not ODATA values)
+			args.push(`@p${argIndex - 1}=[${operation.value.map((v: unknown) => stringifyValue(v, { forceQuotedGuid: true })).join(",")}]`); // if guids, we DO need to quote. values are now JSON, not ODATA values)
 
 			// if the array is empty, then there will never be any results
 			// api will throw for empty list, we set a flag so we can return empty results instead
@@ -403,7 +403,7 @@ function stringifyFilter(entity: EntityMetadata, query: QueryFilter): [string | 
 		if (field && field.type === "reference")
 			return `_${operation.fieldName}_value ${operation.operator} ${stringifyValue(operation.value)}`;
 
-		return `${operation.fieldName} ${operation.operator} ${stringifyValue(operation.value)}`;
+		return `${operation.fieldName} ${operation.operator} ${stringifyValue(operation.value, { doNotQuoteStrings: field?.doNotQuoteInFilter })}`;
 	});
 
 	const subOps = query.filters
@@ -421,18 +421,28 @@ function stringifyFilter(entity: EntityMetadata, query: QueryFilter): [string | 
 	] as const;
 }
 
-function stringifyValue(value: unknown, quotedGuids = false): string {
+type StringifyOptions = {
+	/** Normally a guid is not quoted, but it needs to be when the guid is part of the IN query */
+	forceQuotedGuid?: boolean,
+	/** Normally strings are quited, but they do not to be when it is not a real string but a formatted Date */
+	doNotQuoteStrings?: boolean,
+}
+
+function stringifyValue(value: unknown, stringifyOptions?: StringifyOptions): string {
+
+	const { forceQuotedGuid = false, doNotQuoteStrings = false } = stringifyOptions ?? {};
+
 	if (value === undefined || value === null)
 		return "null";
 
 	if (typeof value === "object" && value !== null && "id" in value && typeof value.id === "string") {
-		if (quotedGuids)
+		if (forceQuotedGuid)
 			return `'${value.id}'`;
 		else
 			return value.id;
 	}
 
-	if (typeof value === "string")
+	if (typeof value === "string" && !doNotQuoteStrings)
 		return `'${value.replaceAll("'", "''")}'`;
 
 	return `${value}`;

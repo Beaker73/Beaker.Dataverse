@@ -37,6 +37,7 @@ function jsonConstructor<
 	const metadata = {
 		schemaName,
 		type: "json",
+		doNotQuoteInFilter: false, // json values are serialized as string, but should be quoted in filters like normal strings
 		options: {
 			optional: (options?.optional ?? false) as TOptions extends { optional: true } ? true : false,
 			maxLength: (options?.maxLength ?? 1000) as TOptions extends { maxLength: infer N extends number } ? N : 1000,

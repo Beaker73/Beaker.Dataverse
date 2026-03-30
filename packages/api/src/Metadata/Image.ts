@@ -34,6 +34,7 @@ function imageConstructor<
 	const metadata = {
 		schemaName,
 		type: "image",
+		doNotQuoteInFilter: false, // image values are serialized as base64 string, but should be quoted in filters like normal strings		
 		options: {
 			optional: (options?.optional ?? false) as TOptions extends { optional: true } ? true : false,
 			maxSize: (options?.maxSize ?? 10240 * 1024) as TOptions extends { maxSize: infer N extends number } ? N : 10240 * 1024,

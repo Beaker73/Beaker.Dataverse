@@ -22,6 +22,8 @@ const coreTypeKey = Symbol("coreType");
 export interface FieldMetadataBase {
 	/** The schema name of the field */
 	schemaName: string,
+	/** for special vaules, that are serialized as string, but do not need quotes (like datetime or guid) */
+	doNotQuoteInFilter: boolean,
 }
 
 /** Adds core types metadata to existing metadata */

@@ -29,6 +29,7 @@ function idConstructor<
 	const metadata = {
 		schemaName,
 		type: "id",
+		doNotQuoteInFilter: true, // guid values are serialized as string, but should not be quoted in filters
 		options: {
 			optional: false,
 			converter: null,

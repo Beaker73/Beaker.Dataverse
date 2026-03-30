@@ -35,6 +35,7 @@ export function guidConstructor<
     const metadata = {
         schemaName,
         type: "guid",
+        doNotQuoteInFilter: true, // guid values are serialized as string, but should not be quoted in filters
         options: {
             optional: (options?.optional ?? false) as TOptions extends { optional: true } ? true : false,
             targetSchemaName: (options as GuidFieldSetupOptions).targetSchemaName,

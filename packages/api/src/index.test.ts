@@ -1,9 +1,10 @@
-import { api, entity, key, string, TypeFromMetadata } from "./Metadata";
+import { api, entity, entityMutationFields, key, string, TypeFromMetadata } from "./Metadata";
 import { id } from "./Metadata/Id";
 import { odataConnector } from "./Connectors/OData";
 import { describe, expect, test } from "vitest";
 import { guid } from "./Metadata/Guid";
 import { Tag } from "./Helpers";
+import { Operator } from "./Queries";
 
 type ReversedString = Tag<string, "variant", "Reversed">;
 
@@ -18,6 +19,7 @@ const accountMetadata = entity("Account", {
             return value.split("").reverse().join("");
         }
     } }),
+    ...entityMutationFields(),
 });
 
 type AccountMetadata = typeof accountMetadata;
@@ -65,6 +67,18 @@ describe("Live Integration Tests", async () => {
             accounts: accountMetadata,
             teamRoles: teamRoleMetadata,
         }
+    })
+
+    test("queryWithCompareDate", async () => {
+        const result = await testApi.accounts.retrieveMultiple({
+            query: [
+                { field: "createdOn", operator: Operator.GreaterThan, value: new Date("2021-08-05T10:08:00+02:00") },
+                { field: "createdOn", operator: Operator.LessThan, value: new Date("2021-08-05T10:10:00+02:00") }
+            ],
+            expectSingle: true,
+        });
+
+        expect(result?.accountNumber).toBe("2991000000");
     })
 
     test("select specific columns only - retrieveMultiple", async () => {

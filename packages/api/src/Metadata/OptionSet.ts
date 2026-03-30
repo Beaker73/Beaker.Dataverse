@@ -60,6 +60,7 @@ export function optionSetConstructor<
 	const metadata = {
 		schemaName,
 		type: "optionSet",
+		doNotQuoteInFilter: false, // value is for strings only, optionSet values are number values, so false
 		options: {
 			optional: (options?.optional ?? false) as TOptions extends { optional: true } ? true : false,
 			enumMetadata: options?.enumMetadata as TEnumMetadata,

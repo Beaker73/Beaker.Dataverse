@@ -45,6 +45,7 @@ function moneyConstructor<
 	const metadata = {
 		schemaName,
 		type: "money",
+		doNotQuoteInFilter: false, // only for string values, but money is not string, so false
 		options: {
 			optional: (options?.optional ?? false) as Options extends { optional: true } ? true : false,
 			decimals: (options?.decimals ?? 4) as Options extends { decimals: infer N extends number } ? N : 4,

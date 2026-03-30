@@ -50,6 +50,7 @@ export function referenceConstructor<
 	const metadata = {
 		schemaName,
 		type: "reference",
+		doNotQuoteInFilter: false, // references have custom odata bind behavior, set a default value of false
 		options: {
 			optional: (options?.optional ?? false) as TOptions extends { optional: true } ? true : false,
 			targetSchemaName: options?.targetSchemaName as Target,
