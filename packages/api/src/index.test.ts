@@ -148,7 +148,6 @@ describe("Live Integration Tests", async () => {
         expect(result.length).toBeGreaterThan(0);
     });
 
-
     const accountId = "f9783d6f-c4f5-eb11-94ef-000d3a2bfe19" as AccountId;
     const account = await testApi.accounts.retrieve(accountId);
 

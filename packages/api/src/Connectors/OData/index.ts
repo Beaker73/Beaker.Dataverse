@@ -193,7 +193,7 @@ export async function odataConnector(url: URL, options?: { baseUrl?: string, tok
 
 		const queryArgs = args.join("&");
 
-		console.log(filterString);
+		console.log(`${entitySetName(query.schemaName)}?${queryArgs}`);
 
 		const result = await get<{ value: Record<string, unknown>[] }>(`${entitySetName(query.schemaName)}?${queryArgs}`);
 		return result.value.map(raw => entityData(query.schemaName, raw));

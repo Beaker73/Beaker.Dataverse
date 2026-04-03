@@ -80,8 +80,11 @@ export function queryToFilter<
 			filter.operations.push({
 				fieldName: field.schemaName.toLowerCase(),
 				operator: operator(qop),
+				// special mappings, null operators to null, in operators to proces array, and otherwise single value conversion
 				value: qop === Operator.Null || qop === Operator.NotNull ? null
-					: "value" in fieldQuery ? convertFieldToServer(field, fieldQuery.value) : undefined,
+				    : qop === Operator.In && "value" in fieldQuery && Array.isArray(fieldQuery.value) ? fieldQuery.value.map(v => convertFieldToServer(field, v))
+					: "value" in fieldQuery ? convertFieldToServer(field, fieldQuery.value) 
+					: undefined,
 			});
 		}
 	}
