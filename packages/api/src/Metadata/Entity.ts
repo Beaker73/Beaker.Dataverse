@@ -24,6 +24,8 @@ export interface EntityMetadata<
 	fields: TFields,
 	/** If this entity is readonly and won't allow any updates */
 	isReadOnly: boolean,
+	/** Optional list of functions added via extension */
+	functions?: Record<string, (entity: any) => unknown>,
 }
 
 export const knownEntityMetadata: Record<string, EntityMetadata> = {};

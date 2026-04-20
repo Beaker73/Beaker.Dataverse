@@ -44,7 +44,7 @@ const stateAndMutationFields = {
 export function newEntity<
 	TMetadata extends EntityMetadata<TSchemaName>,
 	TSchemaName extends string = TMetadata["schemaName"],
-	TEntity = TypeFromMetadata<TMetadata>
+	TEntity = TypeFromMetadata<Omit<TMetadata, "functions">>
 >(
 	metadata: TMetadata,
 	// if final initData type is emtpy, we allow no initData to be passed (make it optional argument)
@@ -182,8 +182,17 @@ export function mapEntity<
 				let value = undefined;
 
 				const field = metadata.fields[key];
-				if (!field)
-					return value;
+				if (!field) {
+
+					const hasFunction = metadata.functions && key in metadata.functions;
+					if(!hasFunction)
+						return value;
+
+					const func = metadata.functions![key];
+					if (typeof func !== "function")
+						debugThrow(new Error(`The function ${key} on entity ${metadata.schemaName} is not a function`));
+					return func(proxy);
+				}
 
 				if (field && !field.schemaName)
 					debugThrow(new Error(`The field ${key} is missing a schema name`));

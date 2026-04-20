@@ -4,6 +4,9 @@
 
 | Version | Description                                                                                                                                 |
 | ------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.3.2   | Small adjustment in the type derivation for funtions so properties are correctly typed                                                      |
+| 0.3.1   | Correctly export new extension function for external usage                                                                                  |
+| 0.3.0   | Added extension so one can add custom methods/functions to the entity                                                                       |
 | 0.2.7   | Fixed bug with IN operator icm with values that need a converter. The array instead of the individual values where passed to the converter. |
 | 0.2.6   | Fixed UTC/Local Time date conversion                                                                                                        |
 | 0.2.5   | Fixed not exporting the new date type                                                                                                       |

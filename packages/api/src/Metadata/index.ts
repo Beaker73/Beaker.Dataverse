@@ -15,6 +15,7 @@ export * from "./Money";
 export * from "./OptionSet";
 export * from "./Reference";
 export * from "./String";
+export * from "./Functions";
 
 import type { BooleanFieldMetadata } from "./Boolean";
 import type { DateFieldMetadata } from "./Date";

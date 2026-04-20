@@ -6,25 +6,31 @@ import { guid } from "./Metadata/Guid";
 import { Tag } from "./Helpers";
 import { Operator } from "./Queries";
 import { date } from "./Metadata/Date";
+import { extend } from "./Metadata/Functions";
 
 type ReversedString = Tag<string, "variant", "Reversed">;
 
-const accountMetadata = entity("Account", {
-    id: id("AccountId"),
-    name: key("Name"),
-    accountNumber: string("AccountNumber", {
-        maxLength: 20, converter: {
-            convert(value: string) {
-                return value.split("").reverse().join("") as ReversedString;
-            },
-            revert(value: ReversedString) {
-                return value.split("").reverse().join("");
+const accountMetadata = extend(
+    entity("Account", {
+        id: id("AccountId"),
+        name: key("Name"),
+        accountNumber: string("AccountNumber", {
+            maxLength: 20, converter: {
+                convert(value: string) {
+                    return value.split("").reverse().join("") as ReversedString;
+                },
+                revert(value: ReversedString) {
+                    return value.split("").reverse().join("");
+                }
             }
-        }
+        }),
+        companyInfoLastChangeDate: date("wur_companyinfolastchangedate"),
+        ...entityMutationFields(),
     }),
-    companyInfoLastChangeDate: date("wur_companyinfolastchangedate"),
-    ...entityMutationFields(),
-});
+    {
+        originalAccountNumber: account => account.accountNumber.split("").reverse().join(""),
+        append: account => (value: string) => `${account.name} (${value})`,
+    });
 
 type AccountMetadata = typeof accountMetadata;
 type Account = TypeFromMetadata<AccountMetadata>;
@@ -153,6 +159,9 @@ describe("Live Integration Tests", async () => {
 
     expect(account.accountNumber).toBe("2991000000");
     console.log(account);
+
+    expect(account.originalAccountNumber).toBe("0000001992");
+    expect(account.append("test")).toBe("12Banaan B.V. (test)");
 
     await testApi.accounts.retrieveMultiple()
 });

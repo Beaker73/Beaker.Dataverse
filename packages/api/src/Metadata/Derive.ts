@@ -16,6 +16,12 @@ export type TypeFromMetadata<TMetadata> =
 		? Merge<[
 			{ -readonly [K in keyof TFields]: FieldType<TFields[K]> },
 			{ id: Guid<TMetadata["schemaName"]> },
+			TMetadata extends { functions: infer TFunctions }
+				? { [K in keyof TFunctions]: 
+					TFunctions[K] extends (entity: any) => (...args: infer TArgs) => infer TResult ? (...args: TArgs) => TResult 
+					 : TFunctions[K] extends (entity: any) => infer TResult ? TResult 
+					 : never } 
+				: {},
 			{ [tags]: {
 				type: "Entity",
 				schemaName: TMetadata["schemaName"],
